@@ -1,30 +1,20 @@
 package by.y_lab.p1entity;
 
+import lombok.Getter;
+
 import java.util.Objects;
 
+/**
+ * Класс типа тренировки
+ */
+@Getter
 public class Exercise {
 
-    private String exerciseName;
-    private int caloriesBurnInHour;
+    private final String exerciseName;
+    private final int caloriesBurnInHour;
 
     public Exercise(String exerciseName, int caloriesBurnInHour) {
         this.exerciseName = exerciseName;
-        this.caloriesBurnInHour = caloriesBurnInHour;
-    }
-
-    public String getExerciseName() {
-        return exerciseName;
-    }
-
-    public void setExerciseName(String exerciseName) {
-        this.exerciseName = exerciseName;
-    }
-
-    public int getCaloriesBurnInHour() {
-        return caloriesBurnInHour;
-    }
-
-    public void setCaloriesBurnInHour(int caloriesBurnInHour) {
         this.caloriesBurnInHour = caloriesBurnInHour;
     }
 

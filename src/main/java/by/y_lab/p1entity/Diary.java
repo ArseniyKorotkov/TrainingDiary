@@ -5,48 +5,119 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
+/**
+ * Класс дневника
+ */
 public class Diary {
 
     private final List<TreeSet<NoteExerciseInDiary>> diaryList = new ArrayList<>();
 
-
+    /**
+     * Добавление актуальной тренировки в дневник
+     * @param exercise добавляемая в дневник тренировка
+     * @param times количество единиц выполнения
+     */
     public void addExercise(Exercise exercise, int times) {
-        nextDays();
-        NoteExerciseInDiary noteExerciseInDiary = new NoteExerciseInDiary(exercise, LocalDateTime.now(), times);
-        if (getLastDay().contains(noteExerciseInDiary)) {
-            NoteExerciseInDiary ceiling = getLastDay().ceiling(noteExerciseInDiary);
-            times += ceiling.getTimesCount();
+        createNowDays();
+        Optional<NoteExerciseInDiary> exerciseOptional = getLastDay()
+                .stream()
+                .filter(note -> note.getExercise().equals(exercise))
+                .findFirst();
+
+        if (exerciseOptional.isPresent()) {
+            times += exerciseOptional.get().getTimesCount();
+            getLastDay().remove(exerciseOptional.get());
         }
         getLastDay().add(new NoteExerciseInDiary(exercise, LocalDateTime.now(), times));
     }
 
-    public void editExercise(Exercise exercise, LocalDateTime dateTime, int times) {
-        NoteExerciseInDiary noteExerciseInDiary = new NoteExerciseInDiary(exercise, dateTime, times);
-        if (getLastDay().contains(noteExerciseInDiary)) {
-            NoteExerciseInDiary exerciseInDiary = getLastDay().ceiling(noteExerciseInDiary);
-            exerciseInDiary.setDateTime(dateTime);
-            exerciseInDiary.setTimesCount(times);
-            getLastDay().add(exerciseInDiary);
+    /**
+     * Добавление неактуальной тренировки в дневник
+     * @param user аккаунт-владелец дневника
+     * @param exercise добавляемая в дневник тренировка
+     * @param times количество единиц выполнения
+     * @param exerciseTime дата и время проведенной тренировки
+     */
+    public void addExercise(User user, Exercise exercise, int times, LocalDateTime exerciseTime) {
+        createNowDays();
+
+        int between = (int) ChronoUnit.DAYS.between(user.getRegistrationDate(), exerciseTime.toLocalDate());
+        if(between < 0 || ChronoUnit.DAYS.between(exerciseTime.toLocalDate(), LocalDateTime.now()) < 0) {
+            return;
         }
+
+        Optional<NoteExerciseInDiary> exerciseOptional = getSelectedDay(between)
+                .stream()
+                .filter(note -> note.getExercise().equals(exercise))
+                .findFirst();
+
+        if (exerciseOptional.isPresent()) {
+            getSelectedDay(between).remove(exerciseOptional.get());
+            times += exerciseOptional.get().getTimesCount();
+        }
+        getSelectedDay(between).add(new NoteExerciseInDiary(exercise, LocalDateTime.now(), times));
     }
 
-    public void nextDays() {
+    /**
+     * Удаление неактуальной тренировки из дневника
+     * @param user аккаунт-владелец дневника
+     * @param exercise удаляемая из дневника тренировка
+     * @param exerciseDate дата и время удаляемой тренировки
+     */
+    public void deleteExercise(User user, Exercise exercise, LocalDate exerciseDate) {
+        int between = (int) ChronoUnit.DAYS.between(user.getRegistrationDate(), exerciseDate);
+        if(between < 0 || ChronoUnit.DAYS.between(exerciseDate, LocalDateTime.now()) < 0) {
+            return;
+        }
+        TreeSet<NoteExerciseInDiary> selectedDay = getSelectedDay(between);
+        Optional<NoteExerciseInDiary> deletedExercise = selectedDay
+                .stream()
+                .filter(note -> note.getExercise().equals(exercise))
+                .findFirst();
+
+        deletedExercise.ifPresent(selectedDay::remove);
+
+    }
+
+    /**
+     * Добавление актуального количества дней в дневник
+     */
+    private void createNowDays() {
         if (diaryList.isEmpty()) {
-            diaryList.add(new TreeSet<>());
-            getLastDay().add(new NoteExerciseInDiary(new Exercise("registration", 0),
-                    LocalDateTime.now(), 1));
+            diaryList.add(new TreeSet<>(Comparator.comparing(NoteExerciseInDiary::hashCode)));
         } else {
-            for (int i = 0; i < ChronoUnit.DAYS.between(getLastDay().last().getDateTime().toLocalDate(), LocalDate.now()); i++) {
-                diaryList.add(new TreeSet<>());
+            long between = ChronoUnit.DAYS.between(getLastDay().last().getDateTime().toLocalDate(), LocalDate.now());
+            for (long i = 0; i < between; i++) {
+                diaryList.add(new TreeSet<>(Comparator.comparing(NoteExerciseInDiary::hashCode)));
             }
         }
 
     }
 
+    /**
+     * Запрос последнего дня в дневнике
+     * @return страницу текущих суток дневника
+     */
     public TreeSet<NoteExerciseInDiary> getLastDay() {
+        if(diaryList.isEmpty()){
+            return new TreeSet<>(Comparator.comparing(NoteExerciseInDiary::hashCode));
+        }
         return diaryList.get(getDiaryList().size() - 1);
     }
 
+    /**
+     * Запрос выбранного дня в дневнике
+     * @param day номер дня от регистрации пользователя
+     * @return страницу текущих суток дневника
+     */
+    public TreeSet<NoteExerciseInDiary> getSelectedDay(Integer day) {
+        return diaryList.get(day);
+    }
+
+    /**
+     * Предоставление полного списка тренировок в дневнике
+     * @return список тренировок
+     */
     public List<TreeSet<NoteExerciseInDiary>> getDiaryList() {
         return diaryList;
     }
