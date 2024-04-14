@@ -77,6 +77,7 @@ public class LoginPage extends Page {
     public static void showAnswers(ArrayList<String> answers) {
         for (String answer : answers) {
             System.out.println(answer);
+            System.out.println();
         }
         answers.clear();
     }

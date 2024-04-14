@@ -1,5 +1,6 @@
 package by.y_lab;
 
+import static by.y_lab.p0util.Auditor.showActions;
 import static by.y_lab.p0util.SelectionItems.*;
 import static by.y_lab.p0util.Auditor.writeAction;
 
@@ -70,7 +71,7 @@ public class TrainingDiary {
             LoginPage.startConversation();
             answer = LoginPage.takeAnswerAboutAccount();
             if (answer.equals(SHORT_AGREE) || answer.equals(AGREE)) {
-                Optional<User> userOptional = LOGIN_CONTROLLER.getUser(LoginPage.Authorization());
+                Optional<User> userOptional = LOGIN_CONTROLLER.checkAccount(LoginPage.Authorization());
                 if (userOptional.isEmpty()) {
                     LoginPage.showAnswers(LOGIN_CONTROLLER.getBadAnswers());
                 } else {
@@ -217,11 +218,17 @@ public class TrainingDiary {
             Optional<Exercise> exerciseOptional =
                     EXERCISE_CONTROLLER.getExerciseToName(userNow, noteExerciseInDiaryDto.get().getExerciseName());
             if (exerciseOptional.isPresent()) {
-                DIARY_CONTROLLER.addMissingExercise(userNow,
+                if (DIARY_CONTROLLER.addMissingExercise(userNow,
                         exerciseOptional.get(),
-                        noteExerciseInDiaryDto.get().getTimesCount(), exerciseTime);
-                AddExerciseInDiaryPage.agreeMessage();
-                writeAction(userNow, "внес изменения в прошлую активность");
+                        noteExerciseInDiaryDto.get().getTimesCount(),
+                        exerciseTime)) {
+
+                    AddExerciseInDiaryPage.agreeMessage();
+                    writeAction(userNow, "внес изменения в прошлую активность");
+                } else {
+                    writeAction(userNow, "попытался внести изменения в прошлую активность");
+                    AddExerciseInDiaryPage.refuseDateMessage();
+                }
             } else {
                 AddExerciseInDiaryPage.refuseMessage();
                 writeAction(userNow, "попытался внести изменения в прошлую активность");
@@ -238,18 +245,19 @@ public class TrainingDiary {
      * @see TrainingDiary#showDiaryTimeSliceMenuItem()
      */
     private static void deleteExerciseDairy() {
-        LocalDate exerciseDate = LocalDate.parse(ShowDiaryTimeSlicePage.askDate(), FormatDateTime.reformDateTime());
+        LocalDateTime exerciseDate = LocalDateTime.parse(ShowDiaryTimeSlicePage.askDate(), FormatDateTime.reformDateTime());
         Set<Exercise> userExercises = EXERCISE_CONTROLLER.getUserExercises(userNow);
-        Optional<NoteExerciseInDiaryDto> noteExerciseInDiaryDto = AddExerciseInDiaryPage.addExerciseInDiary(userExercises);
-        if (noteExerciseInDiaryDto.isPresent()) {
+        Optional<String> stringOptional = ShowDiaryTimeSlicePage.selectExerciseToDelete(userExercises);
+        if (stringOptional.isPresent()) {
             Optional<Exercise> exerciseOptional =
-                    EXERCISE_CONTROLLER.getExerciseToName(userNow, noteExerciseInDiaryDto.get().getExerciseName());
-            if (exerciseOptional.isPresent()) {
+                    EXERCISE_CONTROLLER.getExerciseToName(userNow, stringOptional.get());
+            if (exerciseOptional.isPresent() && DIARY_CONTROLLER
+                    .isExerciseInDiary(userNow, exerciseOptional.get(), exerciseDate)) {
                 DIARY_CONTROLLER.deleteExercise(userNow,
-                        exerciseOptional.get(), exerciseDate);
-                AddExerciseInDiaryPage.agreeMessage();
+                        exerciseOptional.get(), exerciseDate.toLocalDate());
+                ShowDiaryTimeSlicePage.agreeMessage();
             } else {
-                AddExerciseInDiaryPage.refuseMessage();
+                ShowDiaryTimeSlicePage.refuseMessage();
             }
         }
         displayedPage = DisplayedPage.MENU;
@@ -266,6 +274,7 @@ public class TrainingDiary {
             switch (answer) {
                 case SHOW_USERS_DATA -> showUserFromAdmin();
                 case DELETE_USER -> deleteUserFromAdmin();
+                case SHOW_AUDIT_FILES -> showAudit();
                 case EXIT -> displayedPage = DisplayedPage.MENU;
             }
         } else {
@@ -273,6 +282,7 @@ public class TrainingDiary {
             displayedPage = DisplayedPage.MENU;
         }
     }
+
 
     /**
      * Подпункт возможностей администратора
@@ -296,6 +306,14 @@ public class TrainingDiary {
             writeAction(userNow, "попытался просмотреть активность пользователя " + userDto.getLastName()
                                  + " with email " + userDto.getEmail() + " на правах администратора");
         }
+    }
+
+    /**
+     * Подпункт возможностей администратора
+     * Просмотр списка всех действий пользователей приложения
+     */
+    private static void showAudit() {
+        showActions();
     }
 
     /**

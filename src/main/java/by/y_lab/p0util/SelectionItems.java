@@ -20,4 +20,6 @@ public class SelectionItems {
     public static final String DELETE_USER = "delete user (from lastname and email)";
     public static final String ACCOUNT_ALREADY_USED = "this account already used";
     public static final String REGEX = "/";
+    public static final String SHOW_AUDIT_FILES = "show audit files";
+
 }

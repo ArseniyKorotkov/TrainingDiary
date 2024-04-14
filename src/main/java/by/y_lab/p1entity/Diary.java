@@ -37,13 +37,14 @@ public class Diary {
      * @param exercise добавляемая в дневник тренировка
      * @param times количество единиц выполнения
      * @param exerciseTime дата и время проведенной тренировки
+     * @return проверка временной корректности запрошенной даты
      */
-    public void addExercise(User user, Exercise exercise, int times, LocalDateTime exerciseTime) {
+    public boolean addExercise(User user, Exercise exercise, int times, LocalDateTime exerciseTime) {
         createNowDays();
 
         int between = (int) ChronoUnit.DAYS.between(user.getRegistrationDate(), exerciseTime.toLocalDate());
         if(between < 0 || ChronoUnit.DAYS.between(exerciseTime.toLocalDate(), LocalDateTime.now()) < 0) {
-            return;
+            return false;
         }
 
         Optional<NoteExerciseInDiary> exerciseOptional = getSelectedDay(between)
@@ -56,6 +57,28 @@ public class Diary {
             times += exerciseOptional.get().getTimesCount();
         }
         getSelectedDay(between).add(new NoteExerciseInDiary(exercise, LocalDateTime.now(), times));
+        return true;
+    }
+
+    /**
+     * Проверяет на наличие записи тренировки в определенный день
+     * @param user аккаунт-владелец дневника
+     * @param exercise проверяемая на наличие тренировка из дневника
+     * @param exerciseTime время проверяемой на наличие тренировки из дневника
+     * @return результат проверки
+     */
+    public boolean isExerciseInDiary(User user, Exercise exercise, LocalDateTime exerciseTime) {
+        createNowDays();
+
+        int between = (int) ChronoUnit.DAYS.between(user.getRegistrationDate(), exerciseTime.toLocalDate());
+        if(between < 0 || ChronoUnit.DAYS.between(exerciseTime.toLocalDate(), LocalDateTime.now()) < 0) {
+            return false;
+        }
+
+        return getSelectedDay(between)
+                .stream()
+                .filter(ex -> ex.getExercise().getExerciseName().equals(exercise.getExerciseName()))
+                .anyMatch(note -> note.getDateTime().equals(exerciseTime));
     }
 
     /**

@@ -23,6 +23,7 @@ public class DiaryService {
 
     /**
      * Создание дневника для нового пользователя
+     *
      * @param user новый пользователь
      */
     public void createDiary(User user) {
@@ -31,9 +32,10 @@ public class DiaryService {
 
     /**
      * Добавление актуальной тренировки в дневник
-     * @param user аккаунт-владелец дневника
+     *
+     * @param user     аккаунт-владелец дневника
      * @param exercise добавляемая в дневник тренировка
-     * @param times количество единиц выполнения
+     * @param times    количество единиц выполнения
      */
     public void addExercise(User user, Exercise exercise, int times) {
         diaryDao.addExercise(user, exercise, times);
@@ -41,19 +43,22 @@ public class DiaryService {
 
     /**
      * Добавление неактуальной тренировки в дневник
-     * @param user аккаунт-владелец дневника
-     * @param exercise добавляемая в дневник тренировка
-     * @param times количество единиц выполнения
+     *
+     * @param user         аккаунт-владелец дневника
+     * @param exercise     добавляемая в дневник тренировка
+     * @param times        количество единиц выполнения
      * @param exerciseTime дата и время проведенной тренировки
+     * @return проверка временной корректности запрошенной даты
      */
-    public void addExercise(User user, Exercise exercise, int times, LocalDateTime exerciseTime) {
-        diaryDao.addExercise(user, exercise, times, exerciseTime);
+    public boolean addExercise(User user, Exercise exercise, int times, LocalDateTime exerciseTime) {
+        return diaryDao.addExercise(user, exercise, times, exerciseTime);
     }
 
     /**
      * Удаление неактуальной тренировки из дневника
-     * @param user аккаунт-владелец дневника
-     * @param exercise удаляемая из дневника тренировка
+     *
+     * @param user         аккаунт-владелец дневника
+     * @param exercise     удаляемая из дневника тренировка
      * @param exerciseDate дата и время удаляемой тренировки
      */
     public void deleteExercise(User user, Exercise exercise, LocalDate exerciseDate) {
@@ -62,6 +67,7 @@ public class DiaryService {
 
     /**
      * Предоставление полного списка тренировок в дневнике
+     *
      * @param user аккаунт-владелец дневника
      * @return список тренировок
      */
@@ -71,6 +77,7 @@ public class DiaryService {
 
     /**
      * Удаление дневника пользователя
+     *
      * @param user удаляемый аккаунт пользователя
      */
     public void deleteDiary(User user) {
@@ -79,11 +86,16 @@ public class DiaryService {
 
     /**
      * Предоставление списка тренировок за текуще сутоки
+     *
      * @param user аккаунт-владелец дневника
      * @return список тренировок за текуще сутоки
      */
     public TreeSet<NoteExerciseInDiary> getLastDay(User user) {
         return diaryDao.getLastDay(user);
+    }
+
+    public boolean isExerciseInDiary(User user, Exercise exercise, LocalDateTime exerciseTime) {
+        return diaryDao.isExerciseInDiary(user, exercise, exerciseTime);
     }
 
     public static DiaryService getInstance() {

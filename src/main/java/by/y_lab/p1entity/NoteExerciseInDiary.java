@@ -44,7 +44,7 @@ public class NoteExerciseInDiary {
     public String toString() {
         return NOTE_EXERCISE_IN_DIARY_TO_STRING.formatted(exercise.getExerciseName(),
                 timesCount,
-                dateTime.format(FormatDateTime.reformDate()),
+                dateTime.format(FormatDateTime.reformDateTime()),
                 exercise.getCaloriesBurnInHour() * timesCount);
     }
 }

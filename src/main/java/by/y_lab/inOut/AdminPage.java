@@ -45,6 +45,7 @@ public class AdminPage extends Page {
         }
         System.out.println(ADMIN_SETTINGS);
         System.out.println(SHOW_USERS_DATA);
+        System.out.println(SHOW_AUDIT_FILES);
         System.out.println(DELETE_USER);
         System.out.println(EXIT);
         return SCANNER.nextLine();

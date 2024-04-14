@@ -12,6 +12,7 @@ import java.util.Set;
 public class AddExerciseInDiaryPage extends Page {
 
     private static final String NO_EXERCISES = "No exercises. Create, please!";
+    private static final String NO_GOOD_DATE = "No good date";
     private static final String SELECT_FROM = "Select from:";
     private static final String HOW_MANY = "How many?";
     private static final String EXERCISE_IS_ADDED = "exercise is added";
@@ -49,10 +50,17 @@ public class AddExerciseInDiaryPage extends Page {
     }
 
     /**
-     * Демонстрация отрицательного ответа
+     * Демонстрация отрицательного ответа по причине отсутствия типа тренировки
      */
     public static void refuseMessage() {
         System.out.println(NO_EXERCISES);
+        System.out.println();
+    }
+    /**
+     * Демонстрация отрицательного ответа по причине некорректной даты
+     */
+    public static void refuseDateMessage() {
+        System.out.println(NO_GOOD_DATE);
         System.out.println();
     }
 

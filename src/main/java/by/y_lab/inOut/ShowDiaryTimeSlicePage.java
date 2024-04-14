@@ -2,9 +2,12 @@ package by.y_lab.inOut;
 
 import static by.y_lab.p0util.SelectionItems.*;
 
+import by.y_lab.p1entity.Exercise;
 import by.y_lab.p1entity.NoteExerciseInDiary;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.TreeSet;
 
 /**
@@ -15,6 +18,9 @@ public class ShowDiaryTimeSlicePage extends Page {
     public static final String DAYS_FORMAT = "Enter days format dd.mm.yyyy/dd.mm.yyyy";
     public static final String DATE_FORMAT = "enter date exercise format dd.mm.yyyy hh:mm";
     public static final String BURNED_CALORIES = "In this days burned %s calories";
+    private static final String NO_EXERCISES = "No exercises. Create, please!";
+    private static final String SELECT_FROM = "Select from:";
+    private static final String EXERCISE_IS_DELETED = "exercise is deleted from diary";
 
     /**
      * Запрос временного промежутка
@@ -23,6 +29,25 @@ public class ShowDiaryTimeSlicePage extends Page {
     public static String askTimeSlice() {
         System.out.println(DAYS_FORMAT);
         return SCANNER.nextLine();
+    }
+
+    /**
+     * Запрос названия типа тренировки для удаления дневника
+     * @param exerciseSet  список тренировок пользователя
+     * @return название удаляемого из дневника типа тренировки
+     */
+    public static Optional<String> selectExerciseToDelete(Set<Exercise> exerciseSet) {
+        if(exerciseSet.isEmpty()) {
+            System.out.println(NO_EXERCISES);
+            System.out.println();
+            return Optional.empty();
+        }
+        System.out.println(SELECT_FROM);
+        for (Exercise exercise : exerciseSet) {
+            System.out.println(exercise.getExerciseName());
+        }
+        String exerciseName = SCANNER.nextLine();
+        return Optional.of(exerciseName);
     }
 
     /**
@@ -37,7 +62,6 @@ public class ShowDiaryTimeSlicePage extends Page {
         System.out.printf((BURNED_CALORIES) + "%n", caloriesInDayBurned);
         System.out.println();
     }
-
 
     /**
      * Вывод меню работы с дневником
@@ -57,5 +81,21 @@ public class ShowDiaryTimeSlicePage extends Page {
     public static String askDate() {
         System.out.println(DATE_FORMAT);
         return SCANNER.nextLine();
+    }
+
+    /**
+     * Демонстрация положительного ответа
+     */
+    public static void agreeMessage() {
+        System.out.println(EXERCISE_IS_DELETED);
+        System.out.println();
+    }
+
+    /**
+     * Демонстрация отрицательного ответа
+     */
+    public static void refuseMessage() {
+        System.out.println(NO_EXERCISES);
+        System.out.println();
     }
 }

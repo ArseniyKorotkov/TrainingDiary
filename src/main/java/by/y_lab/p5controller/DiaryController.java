@@ -7,6 +7,7 @@ import by.y_lab.p1entity.User;
 import by.y_lab.p4service.DiaryService;
 
 import static by.y_lab.p0util.SelectionItems.*;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -23,13 +24,15 @@ public class DiaryController {
 
     private final DiaryService diaryService = DiaryService.getInstance();
 
-    private DiaryController() {}
+    private DiaryController() {
+    }
 
     /**
      * Добавление актуальной тренировки в дневник
-     * @param user аккаунт-владелец дневника
+     *
+     * @param user     аккаунт-владелец дневника
      * @param exercise добавляемая в дневник тренировка
-     * @param times количество единиц выполнения
+     * @param times    количество единиц выполнения
      */
     public void addExercise(User user, Exercise exercise, int times) {
         diaryService.addExercise(user, exercise, times);
@@ -37,19 +40,22 @@ public class DiaryController {
 
     /**
      * Добавление неактуальной тренировки в дневник
-     * @param user аккаунт-владелец дневника
-     * @param exercise добавляемая в дневник тренировка
-     * @param times количество единиц выполнения
+     *
+     * @param user         аккаунт-владелец дневника
+     * @param exercise     добавляемая в дневник тренировка
+     * @param times        количество единиц выполнения
      * @param exerciseTime дата и время проведенной тренировки
+     * @return проверка временной корректности запрошенной даты
      */
-    public void addMissingExercise(User user, Exercise exercise, int times, LocalDateTime exerciseTime) {
-        diaryService.addExercise(user, exercise, times, exerciseTime);
+    public boolean addMissingExercise(User user, Exercise exercise, int times, LocalDateTime exerciseTime) {
+        return diaryService.addExercise(user, exercise, times, exerciseTime);
     }
 
     /**
      * Удаление неактуальной тренировки из дневника
-     * @param user аккаунт-владелец дневника
-     * @param exercise удаляемая из дневника тренировка
+     *
+     * @param user         аккаунт-владелец дневника
+     * @param exercise     удаляемая из дневника тренировка
      * @param exerciseDate дата и время удаляемой тренировки
      */
     public void deleteExercise(User user, Exercise exercise, LocalDate exerciseDate) {
@@ -58,8 +64,9 @@ public class DiaryController {
 
     /**
      * Предоставление списка тренировок в отрезке времени
+     *
      * @param daysString сведения о запрошенном пользователем отрезке времени
-     * @param user аккаунт-владелец дневника
+     * @param user       аккаунт-владелец дневника
      * @return список тренировок
      */
     public List<TreeSet<NoteExerciseInDiary>> getDiaryTimeSlice(String daysString, User user) {
@@ -82,7 +89,7 @@ public class DiaryController {
 
         List<TreeSet<NoteExerciseInDiary>> exercisesTimeSlice = new ArrayList<>();
 
-        if(!diaryInDaysList.isEmpty()) {
+        if (!diaryInDaysList.isEmpty()) {
             for (int i = startQuestDayInList; i < daysInQuestion; i++) {
                 exercisesTimeSlice.add(diaryInDaysList.get(i));
             }
@@ -94,6 +101,7 @@ public class DiaryController {
 
     /**
      * Суммирование сожженных калорий по списку тренировок
+     *
      * @param diaryExercises список тренировок
      * @return сумма сожженных калорий
      */
@@ -111,11 +119,16 @@ public class DiaryController {
 
     /**
      * Предоставление списка тренировок за текуще сутоки
+     *
      * @param user аккаунт-владелец дневника
      * @return список тренировок за текуще сутоки
      */
     public TreeSet<NoteExerciseInDiary> getLastDay(User user) {
         return diaryService.getLastDay(user);
+    }
+
+    public boolean isExerciseInDiary(User user, Exercise exercise, LocalDateTime exerciseTime) {
+        return diaryService.isExerciseInDiary(user, exercise, exerciseTime);
     }
 
     public static DiaryController getInstance() {

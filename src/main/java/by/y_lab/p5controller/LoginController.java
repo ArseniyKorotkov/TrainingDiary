@@ -20,6 +20,7 @@ public class LoginController {
     private static final LoginController INSTANCE = new LoginController();
     public static final String NOT_CORRECTLY_EMAIL = "not correctly email";
     public static final String BAD_BIRTHDAY_FORMAT = "bad birthday format. Use DAY.MONTH.YEAR";
+    public static final String NOT_HAVE_SO_ACCOUNT = "not have so account";
     public static final char DOT = '.';
     public static final char AT = '@';
 
@@ -66,8 +67,12 @@ public class LoginController {
      * @param userDto сведения, введенные пользователем
      * @return аккаунт пользователя из точки хранения аккаунтов
      */
-    public Optional<User> getUser(UserDto userDto) {
-        return userService.findUser(userDto.getLastName(), userDto.getEmail());
+    public Optional<User> checkAccount(UserDto userDto) {
+        Optional<User> userOptional = userService.findUser(userDto.getLastName(), userDto.getEmail());
+        if(userOptional.isEmpty()) {
+            badAnswers.add(NOT_HAVE_SO_ACCOUNT);
+        }
+        return userOptional;
     }
 
     /**

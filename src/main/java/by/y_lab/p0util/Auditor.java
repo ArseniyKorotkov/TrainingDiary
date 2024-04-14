@@ -13,10 +13,10 @@ public class Auditor {
 
     public static void writeAction(User user, String action) {
         auditList.add(LocalDateTime.now().format(FormatDateTime.reformDateTime()) + ":: User " +
-                      user.getFirstName() + " " + user.getLastName() + " with email " + user.getEmail() + ": " + action);
+                      user.getFirstName() + " " + user.getLastName() + " with email '" + user.getEmail() + "': " + action);
     }
 
-    public static void showActions(String action) {
+    public static void showActions() {
         auditList.forEach(System.out::println);
     }
 

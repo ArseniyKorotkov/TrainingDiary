@@ -24,6 +24,7 @@ public class DiaryDao {
 
     /**
      * Создание дневника для нового пользователя
+     *
      * @param user новый пользователь
      */
     public void createDiary(User user) {
@@ -33,9 +34,10 @@ public class DiaryDao {
 
     /**
      * Добавление актуальной тренировки в дневник
-     * @param user аккаунт-владелец дневника
+     *
+     * @param user     аккаунт-владелец дневника
      * @param exercise добавляемая в дневник тренировка
-     * @param times количество единиц выполнения
+     * @param times    количество единиц выполнения
      */
     public void addExercise(User user, Exercise exercise, int times) {
         diaryHashMap.get(user).addExercise(exercise, times);
@@ -43,19 +45,22 @@ public class DiaryDao {
 
     /**
      * Добавление неактуальной тренировки в дневник
-     * @param user аккаунт-владелец дневника
-     * @param exercise добавляемая в дневник тренировка
-     * @param times количество единиц выполнения
+     *
+     * @param user         аккаунт-владелец дневника
+     * @param exercise     добавляемая в дневник тренировка
+     * @param times        количество единиц выполнения
      * @param exerciseTime дата и время проведенной тренировки
+     * @return проверка временной корректности запрошенной даты
      */
-    public void addExercise(User user, Exercise exercise, int times, LocalDateTime exerciseTime) {
-        diaryHashMap.get(user).addExercise(user, exercise, times, exerciseTime);
+    public boolean addExercise(User user, Exercise exercise, int times, LocalDateTime exerciseTime) {
+        return diaryHashMap.get(user).addExercise(user, exercise, times, exerciseTime);
     }
 
     /**
      * Удаление неактуальной тренировки из дневника
-     * @param user аккаунт-владелец дневника
-     * @param exercise удаляемая из дневника тренировка
+     *
+     * @param user         аккаунт-владелец дневника
+     * @param exercise     удаляемая из дневника тренировка
      * @param exerciseDate дата и время удаляемой тренировки
      */
     public void deleteExercise(User user, Exercise exercise, LocalDate exerciseDate) {
@@ -64,6 +69,7 @@ public class DiaryDao {
 
     /**
      * Предоставление полного списка тренировок в дневнике
+     *
      * @param user аккаунт-владелец дневника
      * @return список тренировок
      */
@@ -73,6 +79,7 @@ public class DiaryDao {
 
     /**
      * Предоставление списка тренировок за текуще сутоки
+     *
      * @param user аккаунт-владелец дневника
      * @return список тренировок за текуще сутоки
      */
@@ -82,10 +89,15 @@ public class DiaryDao {
 
     /**
      * Удаление дневника пользователя
+     *
      * @param user удаляемый аккаунт пользователя
      */
     public void deleteDiary(User user) {
         diaryHashMap.remove(user);
+    }
+
+    public boolean isExerciseInDiary(User user, Exercise exercise, LocalDateTime exerciseTime) {
+        return diaryHashMap.get(user).isExerciseInDiary(user, exercise, exerciseTime);
     }
 
     public static DiaryDao getInstance() {
