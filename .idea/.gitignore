@@ -2,7 +2,7 @@
 /shelf/
 /workspace.xml
 /target
-/.idea
+/.idea/
 
 # Compiled class file
 *.class
