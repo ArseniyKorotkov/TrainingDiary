@@ -60,7 +60,7 @@ ___
     ```
     либо при отсутствии типа тренировки с введенным именем предлагает ее создать
     ```
-    No exercises. Create, please!
+    No such exercise. Create, please!
     ```
     и выходит в основное меню
 + ##create exercise
@@ -105,7 +105,7 @@ ___
      ```
      далее следует стандартному внесению тренировки в дневник, как в пункте "add exercise to diary"
    + 
-   + delete - удаление тренировки в любой день с момента регистрации
+   + delete - удаление тренировки
        + предлагает ввести дату для удаления тренировки
        ```
        enter date exercise format dd.mm.yyyy hh:mm
@@ -126,7 +126,7 @@ ___
     ```
     Admin settings:
     show user`s data (from lastname and email)
-    show audit files
+    show audit user files
     delete user (from lastname and email)
     exit
     ```
@@ -142,7 +142,7 @@ ___
       + Показывает все данные пользователя включая дневник
       + Просит ввести пароль для продолжения
     + show audit files
-      + Позволяет просмотреть все действия пользователей(аудит приложения) 
+      + Позволяет просмотреть все действия пользователя(аудит пользователя) 
     + delete user (from lastname and email) - удаление аккаунта
       + Просит ввести фамилию интересующего пользователя
         ```

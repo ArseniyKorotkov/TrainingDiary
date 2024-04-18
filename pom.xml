@@ -11,6 +11,10 @@
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
+        <org.junit.jupiter-version>5.10.0</org.junit.jupiter-version>
+        <junit-version>4.13.1</junit-version>
+        <org.projectlombok-version>1.18.32</org.projectlombok-version>
+        <org.mockito>5.11.0</org.mockito>
     </properties>
 
     <dependencies>
@@ -18,13 +22,14 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>5.10.0</version>
+            <version>${org.junit.jupiter-version}</version>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.13.1</version>
+            <version>${junit-version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -32,8 +37,16 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.32</version>
+            <version>${org.projectlombok-version}</version>
             <scope>provided</scope>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>${org.mockito}</version>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>
