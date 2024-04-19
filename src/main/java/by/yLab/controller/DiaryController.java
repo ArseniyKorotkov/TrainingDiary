@@ -1,5 +1,6 @@
 package by.yLab.controller;
 
+import by.yLab.service.ExerciseService;
 import by.yLab.util.FormatDateTime;
 import by.yLab.entity.Exercise;
 import by.yLab.entity.NoteDiary;
@@ -22,6 +23,7 @@ public class DiaryController {
     private static final DiaryController INSTANCE = new DiaryController();
 
     private NoteDiaryService diaryService = NoteDiaryService.getInstance();
+    private ExerciseService exerciseService = ExerciseService.getInstance();
 
     private DiaryController() {
     }
@@ -91,7 +93,10 @@ public class DiaryController {
      */
     public int getBurnCalories(List<NoteDiary> diaryExercises) {
         return diaryExercises.stream()
-                .mapToInt(note -> note.getTimesCount() * note.getExercise().getCaloriesBurnInHour())
+                .filter(note -> exerciseService.getExerciseToId(note.getUserId(), note.getExerciseId()).isPresent())
+                .mapToInt(note -> note.getTimesCount() *
+                                  exerciseService.getExerciseToId(note.getUserId(), note.getExerciseId())
+                                          .get().getCaloriesBurnInHour())
                 .sum();
     }
 

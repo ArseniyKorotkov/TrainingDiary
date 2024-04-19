@@ -3,6 +3,8 @@ package by.yLab.dao;
 import by.yLab.util.FormatDateTime;
 import by.yLab.entity.Exercise;
 import by.yLab.entity.User;
+import by.yLab.util.JdbcConnector;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(MockitoExtension.class)
 public class ExerciseDaoTest {
 
+    private static final int TEST_USER_ID = 1;
     private static final String TEST_USER_FIRSTNAME = "first";
     private static final String TEST_USER_LASTNAME = "last";
     private static final String TEST_USER_BIRTHDAY = "11.11.2020";
@@ -29,7 +32,8 @@ public class ExerciseDaoTest {
     private final Exercise firstExercise = new Exercise(TEST_FIRST_EXERCISE_NAME, TEST_FIRST_EXERCISE_BURN_CALORIES);
     private final Exercise secondExercise = new Exercise(TEST_SECOND_EXERCISE_NAME, TEST_SECOND_EXERCISE_BURN_CALORIES);
 
-    private final User user = new User(TEST_USER_FIRSTNAME,
+    private final User user = new User(TEST_USER_ID,
+            TEST_USER_FIRSTNAME,
             TEST_USER_LASTNAME,
             LocalDate.parse(TEST_USER_BIRTHDAY, FormatDateTime.reformDate()),
             TEST_USER_EMAIL,
@@ -37,6 +41,13 @@ public class ExerciseDaoTest {
 
     @InjectMocks
     private ExerciseDao exerciseDao;
+    private UserDao userDao = UserDao.getInstance();
+
+    @BeforeEach
+    void prepareDataBase() {
+        JdbcConnector.updateBase();
+        userDao.addUser(user);
+    }
 
     @Test
     void createExercise() {

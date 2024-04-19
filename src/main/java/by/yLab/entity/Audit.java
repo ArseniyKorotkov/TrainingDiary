@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class Audit {
 
-    private User user;
+    private long user_id;
     private Action action;
     private LocalDateTime actionLocalDateTime;
 

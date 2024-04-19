@@ -3,7 +3,10 @@ package by.yLab.dao;
 import by.yLab.entity.Exercise;
 import by.yLab.entity.NoteDiary;
 import by.yLab.entity.User;
+import by.yLab.util.JdbcConnector;
 
+import java.sql.*;
+import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -13,9 +16,48 @@ import java.util.*;
  */
 public class NoteDiaryDao {
 
-    private static final NoteDiaryDao INSTANCE = new NoteDiaryDao();
+    private static final String ADD_NOTE_EXERCISE_SQL = """
+            INSERT INTO diary_note(user_id, exercise_id, count, exercise_date_time, exercise_date)
+            VALUES(?,?,?,?,?)
+            """;
 
-    private Set<NoteDiary> diary = new HashSet<>();
+    private static final String DELETE_NOTE_EXERCISE_SQL = """
+            DELETE FROM diary_note
+            WHERE user_id=?
+            AND exercise_id=?
+            AND exercise_date=?
+            """;
+
+    private static final String DELETE_DIARY_SQL = """
+            DELETE FROM diary_note
+            WHERE user_id=?
+            """;
+
+    private static final String GET_ALL_NOTE_EXERCISES_SQL = """
+            SELECT *
+            FROM diary_note
+            WHERE user_id=?
+            ORDER BY exercise_date;
+            """;
+
+    private static final String GET_DATE_NOTE_EXERCISES_SQL = """
+            SELECT *
+            FROM diary_note
+            WHERE user_id=?
+            AND exercise_date=?
+            ORDER BY exercise_date;
+            """;
+
+    private static final String GET_DATE_NOTE_EXERCISE_SQL = """
+            SELECT *
+            FROM diary_note
+            WHERE user_id=?
+            AND exercise_id=?
+            AND exercise_date=?
+            """;
+
+
+    private static final NoteDiaryDao INSTANCE = new NoteDiaryDao();
 
     private NoteDiaryDao() {
     }
@@ -27,16 +69,22 @@ public class NoteDiaryDao {
      * @param times    количество единиц выполнения
      */
     public void addNodeExercise(User user, Exercise exercise, int times) {
-        Optional<NoteDiary> noteDiary = diary.stream()
-                .filter(note -> note.getUser().equals(user))
-                .filter(note -> note.getExercise().equals(exercise))
-                .filter(note -> note.getDateTime().toLocalDate().equals(LocalDate.now()))
-                .findFirst();
-        if (noteDiary.isPresent()) {
-            times += noteDiary.get().getTimesCount();
-            deleteNoteExercise(noteDiary.get());
+        try (Connection connection = JdbcConnector.getConnection()) {
+            Optional<NoteDiary> exerciseFromDiary = getExerciseFromDiary(user, exercise, LocalDateTime.now());
+            if (exerciseFromDiary.isPresent()) {
+                times += exerciseFromDiary.get().getTimesCount();
+            }
+            LocalDateTime timeNow = LocalDateTime.now();
+            PreparedStatement preparedStatement = connection.prepareStatement(ADD_NOTE_EXERCISE_SQL);
+            preparedStatement.setLong(1, user.getId());
+            preparedStatement.setLong(2, exercise.getId());
+            preparedStatement.setInt(3, times);
+            preparedStatement.setTimestamp(4, Timestamp.valueOf(timeNow));
+            preparedStatement.setDate(5, Date.valueOf(timeNow.toLocalDate()));
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        diary.add(new NoteDiary(user, exercise, LocalDateTime.now(), times));
     }
 
     /**
@@ -48,16 +96,21 @@ public class NoteDiaryDao {
      * @param exerciseTime дата и время проведенной тренировки
      */
     public void addNodeExercise(User user, Exercise exercise, int times, LocalDateTime exerciseTime) {
-        Optional<NoteDiary> noteDiary = diary.stream()
-                .filter(note -> note.getUser().equals(user))
-                .filter(note -> note.getExercise().equals(exercise))
-                .filter(note -> note.getDateTime().toLocalDate().equals(exerciseTime.toLocalDate()))
-                .findFirst();
-        if (noteDiary.isPresent()) {
-            times += noteDiary.get().getTimesCount();
-            deleteNoteExercise(noteDiary.get());
+        try (Connection connection = JdbcConnector.getConnection()) {
+            Optional<NoteDiary> exerciseFromDiary = getExerciseFromDiary(user, exercise, exerciseTime);
+            if (exerciseFromDiary.isPresent()) {
+                times += exerciseFromDiary.get().getTimesCount();
+            }
+            PreparedStatement preparedStatement = connection.prepareStatement(ADD_NOTE_EXERCISE_SQL);
+            preparedStatement.setLong(1, user.getId());
+            preparedStatement.setLong(2, exercise.getId());
+            preparedStatement.setInt(3, times);
+            preparedStatement.setTimestamp(4, Timestamp.valueOf(exerciseTime));
+            preparedStatement.setDate(5, Date.valueOf(exerciseTime.toLocalDate()));
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        diary.add(new NoteDiary(user, exercise, exerciseTime, times));
     }
 
     /**
@@ -68,21 +121,15 @@ public class NoteDiaryDao {
      * @param exerciseDate дата и время удаляемой тренировки
      */
     public void deleteNoteExercise(User user, Exercise exercise, LocalDate exerciseDate) {
-        Optional<NoteDiary> deleteExercise = diary.stream()
-                .filter(note -> note.getUser().equals(user))
-                .filter(note -> note.getDateTime().toLocalDate().equals(exerciseDate))
-                .filter(note -> note.getExercise().equals(exercise))
-                .findFirst();
-        deleteExercise.ifPresent(diary::remove);
-    }
-
-    /**
-     * Удаление записи тренировки из дневника.
-     *
-     * @param noteDiary удаляемая запись тренировки
-     */
-    public void deleteNoteExercise(NoteDiary noteDiary) {
-        deleteNoteExercise(noteDiary.getUser(), noteDiary.getExercise(), noteDiary.getDateTime().toLocalDate());
+        try (Connection connection = JdbcConnector.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(DELETE_NOTE_EXERCISE_SQL);
+            preparedStatement.setLong(1, user.getId());
+            preparedStatement.setLong(2, exercise.getId());
+            preparedStatement.setDate(3, Date.valueOf(exerciseDate));
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -92,10 +139,20 @@ public class NoteDiaryDao {
      * @return список тренировок
      */
     public List<NoteDiary> getAllNoteExercises(User user) {
-        return diary.stream()
-                .filter(note -> note.getUser().equals(user))
-                .sorted(Comparator.comparing(NoteDiary::getDateTime))
-                .toList();
+        List<NoteDiary> noteDiaryList = new ArrayList<>();
+        try (Connection connection = JdbcConnector.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(GET_ALL_NOTE_EXERCISES_SQL);
+            preparedStatement.setLong(1, user.getId());
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            while (resultSet.next()) {
+                noteDiaryList.add(buildNoteDiary(resultSet));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return noteDiaryList;
     }
 
     /**
@@ -105,11 +162,21 @@ public class NoteDiaryDao {
      * @return список тренировок
      */
     public List<NoteDiary> getDateNoteExercises(User user, LocalDate date) {
-        return diary.stream()
-                .filter(note -> note.getUser().equals(user))
-                .filter(noteDiary -> noteDiary.getDateTime().toLocalDate().equals(date))
-                .sorted(Comparator.comparing(NoteDiary::getDateTime))
-                .toList();
+        List<NoteDiary> noteDiaryList = new ArrayList<>();
+        try (Connection connection = JdbcConnector.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(GET_DATE_NOTE_EXERCISES_SQL);
+            preparedStatement.setLong(1, user.getId());
+            preparedStatement.setDate(2, Date.valueOf(date));
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            while (resultSet.next()) {
+                noteDiaryList.add(buildNoteDiary(resultSet));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return noteDiaryList;
     }
 
     /**
@@ -119,11 +186,7 @@ public class NoteDiaryDao {
      * @return список тренировок за текуще сутоки
      */
     public List<NoteDiary> getToday(User user) {
-        return diary.stream()
-                .filter(note -> note.getUser().equals(user))
-                .filter(note -> note.getDateTime().toLocalDate().equals(LocalDate.now()))
-                .sorted(Comparator.comparing(NoteDiary::getDateTime))
-                .toList();
+        return getDateNoteExercises(user, LocalDate.now());
     }
 
     /**
@@ -132,25 +195,59 @@ public class NoteDiaryDao {
      * @param user удаляемый аккаунт пользователя
      */
     public void deleteDiary(User user) {
-        diary.stream()
-                .filter(noteDiary -> noteDiary.getUser().equals(user))
-                .toList()
-                .forEach(diary::remove);
+        try (Connection connection = JdbcConnector.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(DELETE_DIARY_SQL);
+            preparedStatement.setLong(1, user.getId());
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
      * Проверка наличия записи тренировки в дневнике
      *
-     * @param user проверяемый аккаунт пользователя
-     * @param exercise проверяемый тип тренировки
+     * @param user         проверяемый аккаунт пользователя
+     * @param exercise     проверяемый тип тренировки
      * @param exerciseTime время проверяемой тренировки
      * @return наличие записи тренировки в дневнике
      */
     public boolean isExerciseInDiary(User user, Exercise exercise, LocalDateTime exerciseTime) {
-        return diary.stream()
-                .filter(note -> note.getUser().equals(user))
-                .filter(note -> note.getExercise().equals(exercise))
-                .anyMatch(note -> note.getDateTime().equals(exerciseTime));
+        return getExerciseFromDiary(user, exercise, exerciseTime).isPresent();
+    }
+
+    /**
+     * Получение информации о записи тренировки в дневнике
+     *
+     * @param user         проверяемый аккаунт пользователя
+     * @param exercise     проверяемый тип тренировки
+     * @param exerciseTime время проверяемой тренировки
+     * @return запись тренировки в дневнике
+     */
+    public Optional<NoteDiary> getExerciseFromDiary(User user, Exercise exercise, LocalDateTime exerciseTime) {
+        Optional<NoteDiary> noteDiaryOptional = Optional.empty();
+        try (Connection connection = JdbcConnector.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(GET_DATE_NOTE_EXERCISE_SQL);
+            preparedStatement.setLong(1, user.getId());
+            preparedStatement.setLong(2, exercise.getId());
+            preparedStatement.setDate(3, Date.valueOf(exerciseTime.toLocalDate()));
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            while (resultSet.next()) {
+                noteDiaryOptional = Optional.of(buildNoteDiary(resultSet));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return noteDiaryOptional;
+    }
+
+    private NoteDiary buildNoteDiary(ResultSet resultSet) throws SQLException {
+        return new NoteDiary(resultSet.getLong(2),
+                        resultSet.getLong(3),
+                resultSet.getDate(6).toLocalDate().atTime(0,0),
+                resultSet.getInt(4));
     }
 
     public static NoteDiaryDao getInstance() {

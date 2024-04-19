@@ -43,7 +43,7 @@ public class AdminPage extends Page {
     public static String showAllUsers(User userAdmin, HashSet<User> users) {
         for (User user : users) {
             if (user != userAdmin) {
-                System.out.println(user.getLastName() + " " + user.getEmail());
+                System.out.println(user.getLastname() + " " + user.getEmail());
             }
         }
         System.out.println(ADMIN_SETTINGS);

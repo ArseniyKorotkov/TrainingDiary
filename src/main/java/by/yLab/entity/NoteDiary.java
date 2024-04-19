@@ -19,25 +19,17 @@ public class NoteDiary {
             "exercise '%s' done %s times in day %s. %s calories burned";
 
     @EqualsAndHashCode.Include
-    private User user;
+    private long userId;
     @EqualsAndHashCode.Include
-    private Exercise exercise;
+    private long exerciseId;
     @EqualsAndHashCode.Include
     private LocalDateTime dateTime;
     private int timesCount;
 
-    public NoteDiary(User user, Exercise exercise, LocalDateTime dateTime, int timesCount) {
-        this.user = user;
-        this.exercise = exercise;
+    public NoteDiary(long userId, long exerciseId, LocalDateTime dateTime, int timesCount) {
+        this.userId = userId;
+        this.exerciseId = exerciseId;
         this.dateTime = dateTime;
         this.timesCount = timesCount;
-    }
-
-    @Override
-    public String toString() {
-        return NOTE_EXERCISE_IN_DIARY_TO_STRING.formatted(exercise.getExerciseName(),
-                timesCount,
-                dateTime.format(FormatDateTime.reformDateTime()),
-                exercise.getCaloriesBurnInHour() * timesCount);
     }
 }

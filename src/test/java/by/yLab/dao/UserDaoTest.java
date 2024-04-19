@@ -2,6 +2,8 @@ package by.yLab.dao;
 
 import by.yLab.util.FormatDateTime;
 import by.yLab.entity.User;
+import by.yLab.util.JdbcConnector;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -40,6 +42,11 @@ public class UserDaoTest {
     @InjectMocks
     private UserDao userDao;
 
+    @BeforeEach
+    void prepareDataBase() {
+        JdbcConnector.updateBase();
+    }
+
     @Test
     void isUserRegistered() {
         userDao.addUser(user);
@@ -68,6 +75,7 @@ public class UserDaoTest {
         userDao.addUser(user);
         Optional<User> userOptional = userDao.findUser(TEST_USER_LASTNAME, TEST_USER_EMAIL);
         assertTrue(userOptional.isPresent(), "пользователь не найден по фамилии и почте");
+        user.setId(userOptional.get().getId());
         assertEquals(user, userOptional.get(), "найден неверный пользователь по фамилии и почте");
         assertFalse(userDao.findUser(TEST_SECOND_USER_LASTNAME, TEST_USER_EMAIL).isPresent());
     }
@@ -82,4 +90,5 @@ public class UserDaoTest {
         userDao.deleteUser(secondUser);
         assertEquals(testSize - 2, userDao.getUsers().size(), "второй пользователь не удален из списка");
     }
+
 }
