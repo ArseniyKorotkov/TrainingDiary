@@ -1,5 +1,12 @@
 package by.yLab.util;
 
+import liquibase.Liquibase;
+import liquibase.database.Database;
+import liquibase.database.DatabaseFactory;
+import liquibase.database.jvm.JdbcConnection;
+import liquibase.exception.LiquibaseException;
+import liquibase.resource.ClassLoaderResourceAccessor;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -14,10 +21,10 @@ public final class JdbcConnector {
     private static final String PASSWORD = "ArsySQL";
 
     public static Connection getConnection() throws SQLException {
-//        connection.prepareStatement("SET search_path TO diary_repository,public;");
         return DriverManager.getConnection(URL, USER_NAME, PASSWORD);
     }
 
+    @Deprecated
     public static void updateBase() {
         try (Connection connection = getConnection()) {
             connection.prepareStatement("CREATE SCHEMA IF NOT EXISTS diary_repository;").executeUpdate();
@@ -66,10 +73,27 @@ public final class JdbcConnector {
                         user_id BIGINT  NOT NULL REFERENCES user_account,
                         action_date_time TIMESTAMP NOT NULL,
                         action_date DATE NOT NULL,
-                        action VARCHAR(128) NOT NULL
+                        action_name VARCHAR(128) NOT NULL
                     );
                     """).executeUpdate();
         } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void initDatabaseLiquibase (Connection connection) throws SQLException {
+        connection.prepareStatement("CREATE SCHEMA IF NOT EXISTS diary_repository;").executeUpdate();
+        connection.prepareStatement("SET search_path TO diary_repository,public;").executeUpdate();
+        Database correctDatabaseImplementation;
+        try {
+            correctDatabaseImplementation = DatabaseFactory
+                    .getInstance()
+                    .findCorrectDatabaseImplementation(new JdbcConnection(connection));
+            Liquibase liquibase = new Liquibase("db.changelog/changelog.xml",
+                    new ClassLoaderResourceAccessor(),
+                    correctDatabaseImplementation);
+            liquibase.update();
+        } catch (LiquibaseException e) {
             e.printStackTrace();
         }
     }

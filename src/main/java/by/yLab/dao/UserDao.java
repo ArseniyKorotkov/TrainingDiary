@@ -23,7 +23,8 @@ public class UserDao {
             """;
 
     private static final String FIND_USER_BY_LASTNAME_EMAIL_SQL = """
-          SELECT * FROM user_account
+          SELECT *
+          FROM user_account
           WHERE lastname=?
           AND email=?;
           """;

@@ -16,7 +16,7 @@ public class AuditDao {
     private static final AuditDao INSTANCE = new AuditDao();
 
     private static final String ADD_ACTION = """
-            INSERT INTO audit(user_id, action_date_time, action_date, action)
+            INSERT INTO audit(user_id, action_date_time, action_date, action_name)
             VALUES(?,?,?,?)
             """;
     private static final String GET_ACTIONS_FROM_USER = """

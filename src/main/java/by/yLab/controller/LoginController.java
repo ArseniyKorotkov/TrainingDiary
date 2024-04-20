@@ -51,6 +51,8 @@ public class LoginController {
                 badAnswers.add(ACCOUNT_ALREADY_USED);
             } else {
                 userService.addUser(user);
+                long userId = userService.findUser(userDto.getLastName(), userDto.getEmail()).get().getId();
+                user.setId(userId);
                 optionalUser = Optional.of(user);
             }
         }

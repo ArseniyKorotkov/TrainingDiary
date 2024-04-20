@@ -3,7 +3,7 @@ package by.yLab.inOut;
 import static by.yLab.util.SelectionItems.*;
 
 import by.yLab.entity.Exercise;
-import by.yLab.entity.NoteDiary;
+import by.yLab.entity.DiaryNote;
 
 import java.util.List;
 import java.util.Optional;
@@ -54,7 +54,7 @@ public class ShowDiaryTimeSlicePage extends Page {
      * @param timeSliceList список тренировок в указанный отрезок времени
      * @param caloriesInDayBurned количество потраченных калорий в указанный отрезок времени
      */
-    public static void showTrainingDays(List<NoteDiary> timeSliceList, int caloriesInDayBurned) {
+    public static void showTrainingDays(List<DiaryNote> timeSliceList, int caloriesInDayBurned) {
         timeSliceList.forEach(System.out::println);
         System.out.printf((BURNED_CALORIES) + "%n", caloriesInDayBurned);
         System.out.println();

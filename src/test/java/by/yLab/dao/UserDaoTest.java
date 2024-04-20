@@ -8,6 +8,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -15,9 +18,12 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Testcontainers
 @ExtendWith(MockitoExtension.class)
 public class UserDaoTest {
 
+    @Container
+    private final PostgreSQLContainer<?> container = new PostgreSQLContainer<>("postgres:latest");
     private static final String TEST_USER_FIRSTNAME = "first";
     private static final String TEST_USER_LASTNAME = "last";
     private static final String TEST_USER_BIRTHDAY = "11.11.2020";
@@ -41,11 +47,6 @@ public class UserDaoTest {
 
     @InjectMocks
     private UserDao userDao;
-
-    @BeforeEach
-    void prepareDataBase() {
-        JdbcConnector.updateBase();
-    }
 
     @Test
     void isUserRegistered() {

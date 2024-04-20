@@ -1,0 +1,35 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd"
+        logicalFilePath="changelog.xml">
+    <changeSet id="exercise-table" author="arsy">
+
+        <createTable tableName="exercise" ifNotExists="true">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="exercise_name" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="calories" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="exercise"
+                                 baseColumnNames="user_id"
+                                 constraintName="fk_id_user_account_exercise"
+                                 referencedTableName="user_account"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"
+                                 onUpdate="CASCADE"/>
+
+        <addUniqueConstraint tableName="exercise" columnNames="user_id, exercise_name"/>
+
+    </changeSet>
+
+</databaseChangeLog>

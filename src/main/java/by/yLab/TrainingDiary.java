@@ -7,17 +7,18 @@ import by.yLab.util.Action;
 import by.yLab.util.FormatDateTime;
 import by.yLab.entity.Audit;
 import by.yLab.entity.Exercise;
-import by.yLab.entity.NoteDiary;
+import by.yLab.entity.DiaryNote;
 import by.yLab.entity.User;
 import by.yLab.dto.ExerciseDto;
 import by.yLab.dto.NoteDiaryDto;
 import by.yLab.dto.UserDto;
 import by.yLab.controller.*;
+import by.yLab.util.JdbcConnector;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
-
 
 /**
  * @author Arseni Karatkou
@@ -46,6 +47,7 @@ public class TrainingDiary {
      * Переход по логическим частям приложения
      */
     private static void changePages() {
+        initDatabase();
         while (true) {
             switch (displayedPage) {
                 case LOGIN -> userNow = registrationAndAuthorization();
@@ -58,6 +60,18 @@ public class TrainingDiary {
             }
         }
     }
+
+    /**
+     * Инициализация базы данных
+     */
+    private static void initDatabase() {
+        try {
+            JdbcConnector.initDatabaseLiquibase(JdbcConnector.getConnection());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
 
 
     /**
@@ -170,7 +184,7 @@ public class TrainingDiary {
      * @see TrainingDiary#changePages()
      */
     private static void showDiaryMenuItem() {
-        List<NoteDiary> todayNote = DIARY_CONTROLLER.getLastDay(userNow);
+        List<DiaryNote> todayNote = DIARY_CONTROLLER.getLastDay(userNow);
         int burnCalories = DIARY_CONTROLLER.getBurnCalories(todayNote);
         String answer = ShowDiaryPage.showDiary(todayNote, burnCalories);
         ADMIN_CONTROLLER.addAction(userNow, Action.SEE_TODAY_DIARY);
@@ -191,7 +205,7 @@ public class TrainingDiary {
      * @see TrainingDiary#showDiaryMenuItem()
      */
     private static void showDiaryTimeSliceMenuItem() {
-        List<NoteDiary> diaryTimeSlice =
+        List<DiaryNote> diaryTimeSlice =
                 DIARY_CONTROLLER.getDiaryTimeSlice(ShowDiaryTimeSlicePage.askTimeSlice(), userNow);
         int burnCalories = DIARY_CONTROLLER.getBurnCalories(diaryTimeSlice);
         ShowDiaryTimeSlicePage.showTrainingDays(diaryTimeSlice, burnCalories);
@@ -299,7 +313,7 @@ public class TrainingDiary {
             User user = userOptional.get();
             String registrationDate = user.getRegistrationDate().format(FormatDateTime.reformDate());
             String timeSlice = registrationDate + REGEX + LocalDate.now().format(FormatDateTime.reformDate());
-            List<NoteDiary> diaryTimeSlice = DIARY_CONTROLLER.getDiaryTimeSlice(timeSlice, user);
+            List<DiaryNote> diaryTimeSlice = DIARY_CONTROLLER.getDiaryTimeSlice(timeSlice, user);
             AdminPage.showUser(user, diaryTimeSlice);
         } else {
             AdminPage.noFindUserAnswer();

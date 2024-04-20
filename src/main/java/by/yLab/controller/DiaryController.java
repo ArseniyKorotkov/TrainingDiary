@@ -3,9 +3,9 @@ package by.yLab.controller;
 import by.yLab.service.ExerciseService;
 import by.yLab.util.FormatDateTime;
 import by.yLab.entity.Exercise;
-import by.yLab.entity.NoteDiary;
+import by.yLab.entity.DiaryNote;
 import by.yLab.entity.User;
-import by.yLab.service.NoteDiaryService;
+import by.yLab.service.DiaryNoteService;
 
 import static by.yLab.util.SelectionItems.*;
 
@@ -22,7 +22,7 @@ public class DiaryController {
 
     private static final DiaryController INSTANCE = new DiaryController();
 
-    private NoteDiaryService diaryService = NoteDiaryService.getInstance();
+    private DiaryNoteService diaryService = DiaryNoteService.getInstance();
     private ExerciseService exerciseService = ExerciseService.getInstance();
 
     private DiaryController() {
@@ -69,14 +69,14 @@ public class DiaryController {
      * @param user       аккаунт-владелец дневника
      * @return список тренировок
      */
-    public List<NoteDiary> getDiaryTimeSlice(String daysString, User user) {
+    public List<DiaryNote> getDiaryTimeSlice(String daysString, User user) {
         String[] days = daysString.split(REGEX);
         LocalDate startQuestDayDiary = LocalDate.parse(days[0], FormatDateTime.reformDate());
         LocalDate endQuestDayDiary = LocalDate.parse(days[1], FormatDateTime.reformDate());
 
         int daysInQuestion = (int) ChronoUnit.DAYS.between(startQuestDayDiary, endQuestDayDiary) + 1;
 
-        List<NoteDiary> diaryInDaysList = new ArrayList<>(diaryService.getDiaryList(user));
+        List<DiaryNote> diaryInDaysList = new ArrayList<>(diaryService.getDiaryList(user));
 
         for (int i = 0; i < daysInQuestion; i++) {
             diaryInDaysList.addAll(diaryService.getDateNoteExercises(user, startQuestDayDiary.plusDays(i)));
@@ -91,7 +91,7 @@ public class DiaryController {
      * @param diaryExercises список тренировок
      * @return сумма сожженных калорий
      */
-    public int getBurnCalories(List<NoteDiary> diaryExercises) {
+    public int getBurnCalories(List<DiaryNote> diaryExercises) {
         return diaryExercises.stream()
                 .filter(note -> exerciseService.getExerciseToId(note.getUserId(), note.getExerciseId()).isPresent())
                 .mapToInt(note -> note.getTimesCount() *
@@ -106,7 +106,7 @@ public class DiaryController {
      * @param user аккаунт-владелец дневника
      * @return список тренировок за текуще сутоки
      */
-    public List<NoteDiary> getLastDay(User user) {
+    public List<DiaryNote> getLastDay(User user) {
         return diaryService.getLastDay(user);
     }
 

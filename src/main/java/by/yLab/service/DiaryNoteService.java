@@ -1,9 +1,9 @@
 package by.yLab.service;
 
 import by.yLab.entity.Exercise;
-import by.yLab.entity.NoteDiary;
+import by.yLab.entity.DiaryNote;
 import by.yLab.entity.User;
-import by.yLab.dao.NoteDiaryDao;
+import by.yLab.dao.DiaryNoteDao;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -12,12 +12,12 @@ import java.util.List;
 /**
  * Обработка запросов к дневнику пользователя
  */
-public class NoteDiaryService {
+public class DiaryNoteService {
 
-    private static final NoteDiaryService INSTANCE = new NoteDiaryService();
-    private final NoteDiaryDao diaryDao = NoteDiaryDao.getInstance();
+    private static final DiaryNoteService INSTANCE = new DiaryNoteService();
+    private final DiaryNoteDao diaryDao = DiaryNoteDao.getInstance();
 
-    private NoteDiaryService() {
+    private DiaryNoteService() {
     }
 
     /**
@@ -61,7 +61,7 @@ public class NoteDiaryService {
      * @param date запрашиваемая дата
      * @return списка тренировок в дневнике в указанный день
      */
-    public List<NoteDiary> getDateNoteExercises(User user, LocalDate date) {
+    public List<DiaryNote> getDateNoteExercises(User user, LocalDate date) {
         return diaryDao.getDateNoteExercises(user, date);
     }
 
@@ -71,7 +71,7 @@ public class NoteDiaryService {
      * @param user аккаунт-владелец дневника
      * @return список тренировок
      */
-    public List<NoteDiary> getDiaryList(User user) {
+    public List<DiaryNote> getDiaryList(User user) {
         return diaryDao.getAllNoteExercises(user);
     }
 
@@ -90,7 +90,7 @@ public class NoteDiaryService {
      * @param user аккаунт-владелец дневника
      * @return список тренировок за текуще сутоки
      */
-    public List<NoteDiary> getLastDay(User user) {
+    public List<DiaryNote> getLastDay(User user) {
         return diaryDao.getToday(user);
     }
 
@@ -106,7 +106,7 @@ public class NoteDiaryService {
         return diaryDao.isExerciseInDiary(user, exercise, exerciseTime);
     }
 
-    public static NoteDiaryService getInstance() {
+    public static DiaryNoteService getInstance() {
         return INSTANCE;
     }
 }

@@ -35,7 +35,7 @@ public class ExerciseDao {
             SELECT *
             FROM exercise
             WHERE user_id=?
-            AND exercise_id=?;
+            AND id=?;
             """;
 
     private static final String GET_USER_EXERCISES_SQL = """

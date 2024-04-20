@@ -3,7 +3,7 @@ package by.yLab.inOut;
 import static by.yLab.util.SelectionItems.*;
 
 import by.yLab.entity.Audit;
-import by.yLab.entity.NoteDiary;
+import by.yLab.entity.DiaryNote;
 import by.yLab.entity.User;
 import by.yLab.dto.UserDto;
 
@@ -89,7 +89,7 @@ public class AdminPage extends Page {
      * @param user  указанный пользователь
      * @param diary дневник указанного пользователя
      */
-    public static void showUser(User user, List<NoteDiary> diary) {
+    public static void showUser(User user, List<DiaryNote> diary) {
         System.out.println(user);
         diary.forEach(System.out::println);
         System.out.println();

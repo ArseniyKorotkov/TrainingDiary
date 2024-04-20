@@ -1,6 +1,5 @@
 package by.yLab.entity;
 
-import by.yLab.util.FormatDateTime;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,7 +12,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class NoteDiary {
+public class DiaryNote {
 
     private static final String NOTE_EXERCISE_IN_DIARY_TO_STRING =
             "exercise '%s' done %s times in day %s. %s calories burned";
@@ -26,7 +25,7 @@ public class NoteDiary {
     private LocalDateTime dateTime;
     private int timesCount;
 
-    public NoteDiary(long userId, long exerciseId, LocalDateTime dateTime, int timesCount) {
+    public DiaryNote(long userId, long exerciseId, LocalDateTime dateTime, int timesCount) {
         this.userId = userId;
         this.exerciseId = exerciseId;
         this.dateTime = dateTime;

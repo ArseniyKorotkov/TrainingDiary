@@ -2,14 +2,16 @@ package by.yLab.dao;
 
 import by.yLab.util.FormatDateTime;
 import by.yLab.entity.Exercise;
-import by.yLab.entity.NoteDiary;
+import by.yLab.entity.DiaryNote;
 import by.yLab.entity.User;
-import by.yLab.util.JdbcConnector;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -17,9 +19,12 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Testcontainers
 @ExtendWith(MockitoExtension.class)
-public class NoteDiaryDaoTest {
+public class DiaryNoteDaoTest {
 
+    @Container
+    private final PostgreSQLContainer<?> container = new PostgreSQLContainer<>("postgres:latest");
     private static final String TEST_USER_FIRSTNAME = "first";
     private static final String TEST_USER_LASTNAME = "last";
     private static final String TEST_USER_BIRTHDAY = "11.11.2020";
@@ -45,13 +50,12 @@ public class NoteDiaryDaoTest {
     private final Exercise secondExercise = new Exercise(2, TEST_SECOND_EXERCISE_NAME, TEST_SECOND_EXERCISE_BURN_CALORIES);
 
     @InjectMocks
-    private NoteDiaryDao noteDiaryDao;
+    private DiaryNoteDao noteDiaryDao;
     private UserDao userDao = UserDao.getInstance();
     private ExerciseDao exerciseDao = ExerciseDao.getInstance();
 
     @BeforeEach
     void prepareDataBase() {
-        JdbcConnector.updateBase();
         userDao.addUser(user);
         exerciseDao.createExercise(user, TEST_FIRST_EXERCISE_NAME, TEST_FIRST_EXERCISE_BURN_CALORIES);
         exerciseDao.createExercise(user, TEST_SECOND_EXERCISE_NAME, TEST_SECOND_EXERCISE_BURN_CALORIES);
@@ -59,7 +63,7 @@ public class NoteDiaryDaoTest {
 
     @Test
     void addNodeExercise() {
-        List<NoteDiary> allNoteExercises = noteDiaryDao.getAllNoteExercises(user);
+        List<DiaryNote> allNoteExercises = noteDiaryDao.getAllNoteExercises(user);
         noteDiaryDao.addNodeExercise(user, firstExercise, TEST_FIRST_EXERCISE_TIMES);
         assertEquals(allNoteExercises.size() + 1, noteDiaryDao.getAllNoteExercises(user).size(),
                 "количество записей не увеличено при добавлении новой записи на текущие сутки");
@@ -67,7 +71,7 @@ public class NoteDiaryDaoTest {
 
     @Test
     void addNodeExerciseDateTime() {
-        List<NoteDiary> allNoteExercises = noteDiaryDao.getAllNoteExercises(user);
+        List<DiaryNote> allNoteExercises = noteDiaryDao.getAllNoteExercises(user);
         noteDiaryDao.addNodeExercise(user, firstExercise, TEST_FIRST_EXERCISE_TIMES, TEST_FIRST_EXERCISE_DATE_TIME);
         assertEquals(allNoteExercises.size() + 1, noteDiaryDao.getAllNoteExercises(user).size());
         noteDiaryDao.addNodeExercise(user, secondExercise, TEST_SECOND_EXERCISE_TIMES, TEST_FIRST_EXERCISE_DATE_TIME);
@@ -79,7 +83,7 @@ public class NoteDiaryDaoTest {
     void deleteNoteExercise() {
         noteDiaryDao.addNodeExercise(user, firstExercise, TEST_FIRST_EXERCISE_TIMES, TEST_FIRST_EXERCISE_DATE_TIME);
         noteDiaryDao.addNodeExercise(user, secondExercise, TEST_SECOND_EXERCISE_TIMES, TEST_SECOND_EXERCISE_DATE_TIME);
-        List<NoteDiary> allNoteExercises = noteDiaryDao.getAllNoteExercises(user);
+        List<DiaryNote> allNoteExercises = noteDiaryDao.getAllNoteExercises(user);
         noteDiaryDao.deleteNoteExercise(user, firstExercise, TEST_FIRST_EXERCISE_DATE_TIME.toLocalDate());
         assertEquals(allNoteExercises.size() - 1, noteDiaryDao.getAllNoteExercises(user).size(),
                 "количество записей не уменьшено при удалении записи");

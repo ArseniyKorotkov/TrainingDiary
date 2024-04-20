@@ -1,6 +1,6 @@
 package by.yLab.inOut;
 
-import by.yLab.entity.NoteDiary;
+import by.yLab.entity.DiaryNote;
 
 import java.util.List;
 
@@ -19,8 +19,8 @@ public class ShowDiaryPage extends Page {
      * @param caloriesInDayBurned количество потраченных калорий в текущие сутки
      * @return ответ пользователя
      */
-    public static String showDiary(List<NoteDiary> lastDay, int caloriesInDayBurned) {
-        for (NoteDiary noteExerciseInDiary : lastDay) {
+    public static String showDiary(List<DiaryNote> lastDay, int caloriesInDayBurned) {
+        for (DiaryNote noteExerciseInDiary : lastDay) {
             System.out.println(noteExerciseInDiary);
         }
         System.out.printf((BURNED_CALORIES) + "%n", caloriesInDayBurned);
