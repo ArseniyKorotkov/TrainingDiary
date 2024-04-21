@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class AuditDao {
 
@@ -25,7 +26,7 @@ public class AuditDao {
             WHERE user_id=?
             """;
 
-
+    private JdbcConnector connector = new JdbcConnector();
 
     private AuditDao() {
     }
@@ -37,14 +38,18 @@ public class AuditDao {
      * @param action действие пользователя
      */
     public void addAction(User user, Action action) {
-        try(Connection connection = JdbcConnector.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(ADD_ACTION);
-            preparedStatement.setLong(1,user.getId());
-            preparedStatement.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
-            preparedStatement.setDate(3, Date.valueOf(LocalDate.now()));
-            preparedStatement.setString(4, action.name());
-            preparedStatement.executeUpdate();
-
+        try {
+            if (connector.getConnection().isPresent()) {
+                Connection connection = connector.getConnection().get();
+                PreparedStatement preparedStatement = connection.prepareStatement(ADD_ACTION);
+                preparedStatement.setLong(1, user.getId());
+                preparedStatement.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
+                preparedStatement.setDate(3, Date.valueOf(LocalDate.now()));
+                preparedStatement.setString(4, action.name());
+                preparedStatement.executeUpdate();
+            } else {
+                throw new SQLException();
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -58,16 +63,20 @@ public class AuditDao {
      */
     public List<Audit> getAuditUser(User user) {
         List<Audit> auditList = new ArrayList<>();
-        try(Connection connection = JdbcConnector.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(GET_ACTIONS_FROM_USER);
-            preparedStatement.setLong(1,user.getId());
-            ResultSet resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
-                auditList.add(new Audit(resultSet.getLong(2),
-                        Action.valueOf(resultSet.getString(5)),
-                        resultSet.getTimestamp(3).toLocalDateTime()));
+        try {
+            if (connector.getConnection().isPresent()) {
+                Connection connection = connector.getConnection().get();
+                PreparedStatement preparedStatement = connection.prepareStatement(GET_ACTIONS_FROM_USER);
+                preparedStatement.setLong(1, user.getId());
+                ResultSet resultSet = preparedStatement.executeQuery();
+                while (resultSet.next()) {
+                    auditList.add(new Audit(resultSet.getLong(2),
+                            Action.valueOf(resultSet.getString(5)),
+                            resultSet.getTimestamp(3).toLocalDateTime()));
+                }
+            } else {
+                throw new SQLException();
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
         }

@@ -56,8 +56,9 @@ public class DiaryNoteDao {
             AND exercise_date=?
             """;
 
-
     private static final DiaryNoteDao INSTANCE = new DiaryNoteDao();
+
+    private JdbcConnector connector = new JdbcConnector();
 
     private DiaryNoteDao() {
     }
@@ -69,19 +70,24 @@ public class DiaryNoteDao {
      * @param times    количество единиц выполнения
      */
     public void addNodeExercise(User user, Exercise exercise, int times) {
-        try (Connection connection = JdbcConnector.getConnection()) {
-            Optional<DiaryNote> exerciseFromDiary = getExerciseFromDiary(user, exercise, LocalDateTime.now());
-            if (exerciseFromDiary.isPresent()) {
-                times += exerciseFromDiary.get().getTimesCount();
+        try {
+            if (connector.getConnection().isPresent()) {
+                Connection connection = connector.getConnection().get();
+                Optional<DiaryNote> exerciseFromDiary = getExerciseFromDiary(user, exercise, LocalDateTime.now());
+                if (exerciseFromDiary.isPresent()) {
+                    times += exerciseFromDiary.get().getTimesCount();
+                }
+                LocalDateTime timeNow = LocalDateTime.now();
+                PreparedStatement preparedStatement = connection.prepareStatement(ADD_NOTE_EXERCISE_SQL);
+                preparedStatement.setLong(1, user.getId());
+                preparedStatement.setLong(2, exercise.getId());
+                preparedStatement.setInt(3, times);
+                preparedStatement.setTimestamp(4, Timestamp.valueOf(timeNow));
+                preparedStatement.setDate(5, Date.valueOf(timeNow.toLocalDate()));
+                preparedStatement.executeUpdate();
+            } else {
+                throw new SQLException();
             }
-            LocalDateTime timeNow = LocalDateTime.now();
-            PreparedStatement preparedStatement = connection.prepareStatement(ADD_NOTE_EXERCISE_SQL);
-            preparedStatement.setLong(1, user.getId());
-            preparedStatement.setLong(2, exercise.getId());
-            preparedStatement.setInt(3, times);
-            preparedStatement.setTimestamp(4, Timestamp.valueOf(timeNow));
-            preparedStatement.setDate(5, Date.valueOf(timeNow.toLocalDate()));
-            preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -96,19 +102,24 @@ public class DiaryNoteDao {
      * @param exerciseTime дата и время проведенной тренировки
      */
     public void addNodeExercise(User user, Exercise exercise, int times, LocalDateTime exerciseTime) {
-        try (Connection connection = JdbcConnector.getConnection()) {
-            Optional<DiaryNote> exerciseFromDiary = getExerciseFromDiary(user, exercise, exerciseTime);
-            if (exerciseFromDiary.isPresent()) {
-                times += exerciseFromDiary.get().getTimesCount();
-                deleteNoteExercise(user,exercise,exerciseTime.toLocalDate());
+        try {
+            if (connector.getConnection().isPresent()) {
+                Connection connection = connector.getConnection().get();
+                Optional<DiaryNote> exerciseFromDiary = getExerciseFromDiary(user, exercise, exerciseTime);
+                if (exerciseFromDiary.isPresent()) {
+                    times += exerciseFromDiary.get().getTimesCount();
+                    deleteNoteExercise(user, exercise, exerciseTime.toLocalDate());
+                }
+                PreparedStatement preparedStatement = connection.prepareStatement(ADD_NOTE_EXERCISE_SQL);
+                preparedStatement.setLong(1, user.getId());
+                preparedStatement.setLong(2, exercise.getId());
+                preparedStatement.setInt(3, times);
+                preparedStatement.setTimestamp(4, Timestamp.valueOf(exerciseTime));
+                preparedStatement.setDate(5, Date.valueOf(exerciseTime.toLocalDate()));
+                preparedStatement.executeUpdate();
+            } else {
+                throw new SQLException();
             }
-            PreparedStatement preparedStatement = connection.prepareStatement(ADD_NOTE_EXERCISE_SQL);
-            preparedStatement.setLong(1, user.getId());
-            preparedStatement.setLong(2, exercise.getId());
-            preparedStatement.setInt(3, times);
-            preparedStatement.setTimestamp(4, Timestamp.valueOf(exerciseTime));
-            preparedStatement.setDate(5, Date.valueOf(exerciseTime.toLocalDate()));
-            preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -122,12 +133,17 @@ public class DiaryNoteDao {
      * @param exerciseDate дата и время удаляемой тренировки
      */
     public void deleteNoteExercise(User user, Exercise exercise, LocalDate exerciseDate) {
-        try (Connection connection = JdbcConnector.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(DELETE_NOTE_EXERCISE_SQL);
-            preparedStatement.setLong(1, user.getId());
-            preparedStatement.setLong(2, exercise.getId());
-            preparedStatement.setDate(3, Date.valueOf(exerciseDate));
-            preparedStatement.executeUpdate();
+        try {
+            if (connector.getConnection().isPresent()) {
+                Connection connection = connector.getConnection().get();
+                PreparedStatement preparedStatement = connection.prepareStatement(DELETE_NOTE_EXERCISE_SQL);
+                preparedStatement.setLong(1, user.getId());
+                preparedStatement.setLong(2, exercise.getId());
+                preparedStatement.setDate(3, Date.valueOf(exerciseDate));
+                preparedStatement.executeUpdate();
+            } else {
+                throw new SQLException();
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -141,15 +157,18 @@ public class DiaryNoteDao {
      */
     public List<DiaryNote> getAllNoteExercises(User user) {
         List<DiaryNote> noteDiaryList = new ArrayList<>();
-        try (Connection connection = JdbcConnector.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(GET_ALL_NOTE_EXERCISES_SQL);
-            preparedStatement.setLong(1, user.getId());
-            ResultSet resultSet = preparedStatement.executeQuery();
-
-            while (resultSet.next()) {
-                noteDiaryList.add(buildNoteDiary(resultSet));
+        try {
+            if (connector.getConnection().isPresent()) {
+                Connection connection = connector.getConnection().get();
+                PreparedStatement preparedStatement = connection.prepareStatement(GET_ALL_NOTE_EXERCISES_SQL);
+                preparedStatement.setLong(1, user.getId());
+                ResultSet resultSet = preparedStatement.executeQuery();
+                while (resultSet.next()) {
+                    noteDiaryList.add(buildNoteDiary(resultSet));
+                }
+            } else {
+                throw new SQLException();
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -164,16 +183,19 @@ public class DiaryNoteDao {
      */
     public List<DiaryNote> getDateNoteExercises(User user, LocalDate date) {
         List<DiaryNote> noteDiaryList = new ArrayList<>();
-        try (Connection connection = JdbcConnector.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(GET_DATE_NOTE_EXERCISES_SQL);
-            preparedStatement.setLong(1, user.getId());
-            preparedStatement.setDate(2, Date.valueOf(date));
-            ResultSet resultSet = preparedStatement.executeQuery();
-
-            while (resultSet.next()) {
-                noteDiaryList.add(buildNoteDiary(resultSet));
+        try {
+            if (connector.getConnection().isPresent()) {
+                Connection connection = connector.getConnection().get();
+                PreparedStatement preparedStatement = connection.prepareStatement(GET_DATE_NOTE_EXERCISES_SQL);
+                preparedStatement.setLong(1, user.getId());
+                preparedStatement.setDate(2, Date.valueOf(date));
+                ResultSet resultSet = preparedStatement.executeQuery();
+                while (resultSet.next()) {
+                    noteDiaryList.add(buildNoteDiary(resultSet));
+                }
+            } else {
+                throw new SQLException();
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -196,10 +218,15 @@ public class DiaryNoteDao {
      * @param user удаляемый аккаунт пользователя
      */
     public void deleteDiary(User user) {
-        try (Connection connection = JdbcConnector.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(DELETE_DIARY_SQL);
-            preparedStatement.setLong(1, user.getId());
-            preparedStatement.executeUpdate();
+        try {
+            if (connector.getConnection().isPresent()) {
+                Connection connection = connector.getConnection().get();
+                PreparedStatement preparedStatement = connection.prepareStatement(DELETE_DIARY_SQL);
+                preparedStatement.setLong(1, user.getId());
+                preparedStatement.executeUpdate();
+            } else {
+                throw new SQLException();
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -227,17 +254,22 @@ public class DiaryNoteDao {
      */
     public Optional<DiaryNote> getExerciseFromDiary(User user, Exercise exercise, LocalDateTime exerciseTime) {
         Optional<DiaryNote> noteDiaryOptional = Optional.empty();
-        try (Connection connection = JdbcConnector.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(GET_DATE_NOTE_EXERCISE_SQL);
-            preparedStatement.setLong(1, user.getId());
-            preparedStatement.setLong(2, exercise.getId());
-            preparedStatement.setDate(3, Date.valueOf(exerciseTime.toLocalDate()));
-            ResultSet resultSet = preparedStatement.executeQuery();
 
-            while (resultSet.next()) {
-                noteDiaryOptional = Optional.of(buildNoteDiary(resultSet));
+        try {
+            if (connector.getConnection().isPresent()) {
+                Connection connection = connector.getConnection().get();
+                PreparedStatement preparedStatement = connection.prepareStatement(GET_DATE_NOTE_EXERCISE_SQL);
+                preparedStatement.setLong(1, user.getId());
+                preparedStatement.setLong(2, exercise.getId());
+                preparedStatement.setDate(3, Date.valueOf(exerciseTime.toLocalDate()));
+                ResultSet resultSet = preparedStatement.executeQuery();
+
+                while (resultSet.next()) {
+                    noteDiaryOptional = Optional.of(buildNoteDiary(resultSet));
+                }
+            } else {
+                throw new SQLException();
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -246,8 +278,8 @@ public class DiaryNoteDao {
 
     private DiaryNote buildNoteDiary(ResultSet resultSet) throws SQLException {
         return new DiaryNote(resultSet.getLong(2),
-                        resultSet.getLong(3),
-                resultSet.getDate(6).toLocalDate().atTime(0,0),
+                resultSet.getLong(3),
+                resultSet.getDate(6).toLocalDate().atTime(0, 0),
                 resultSet.getInt(4));
     }
 

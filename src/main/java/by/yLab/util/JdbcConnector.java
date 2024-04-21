@@ -10,8 +10,12 @@ import liquibase.resource.ClassLoaderResourceAccessor;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Optional;
 
-public final class JdbcConnector {
+/**
+ * Управление соединениями с базой данных
+ */
+public class JdbcConnector {
 
     private static final String CREATE_DIARY_SCHEMA_SQL = """
             CREATE SCHEMA IF NOT EXISTS diary_repository;
@@ -22,6 +26,8 @@ public final class JdbcConnector {
             """;
     private static final String CHANGELOG_PATH = "db.changelog/changelog.xml";
 
+    private static Connection connection;
+
     private static final String URL = "jdbc:postgresql://localhost:5433/postgres";
     private static final String USER_NAME = "postgres";
     private static final String PASSWORD = "ArsySQL";
@@ -29,12 +35,30 @@ public final class JdbcConnector {
     public JdbcConnector() {
     }
 
-    public static Connection getConnection() throws SQLException {
-        Connection connection = DriverManager.getConnection(URL, USER_NAME, PASSWORD);
-        connection.prepareStatement(CHANGE_DEFAULT_SCHEMA_SQL).executeUpdate();
-        return connection;
+    /**
+     * Создание соединения с базой данных
+     *
+     * @return соединение с базой данных
+     */
+    public Optional<Connection> getConnection() {
+        Optional<Connection> connectionOptional = Optional.ofNullable(connection);
+        if(connectionOptional.isEmpty()) {
+            try {
+                connection = DriverManager.getConnection(URL, USER_NAME, PASSWORD);
+                connection.prepareStatement(CHANGE_DEFAULT_SCHEMA_SQL).executeUpdate();
+                connectionOptional = Optional.of(connection);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return connectionOptional;
     }
 
+    /**
+     * Инициализация базы данных
+     * @param connection соединение с базой данных
+     * @throws SQLException неудача создания схемы базы данных
+     */
     public static void initDatabaseLiquibase (Connection connection) throws SQLException {
         connection.prepareStatement(CREATE_DIARY_SCHEMA_SQL).executeUpdate();
         Database correctDatabaseImplementation;
@@ -47,63 +71,6 @@ public final class JdbcConnector {
                     correctDatabaseImplementation);
             liquibase.update();
         } catch (LiquibaseException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Deprecated
-    public static void updateBase() {
-        try (Connection connection = getConnection()) {
-            connection.prepareStatement("CREATE SCHEMA IF NOT EXISTS diary_repository;").executeUpdate();
-            connection.prepareStatement("drop table if exists audit;").executeUpdate();
-            connection.prepareStatement("drop table if exists diary_note;").executeUpdate();
-            connection.prepareStatement("drop table if exists exercise;").executeUpdate();
-            connection.prepareStatement("drop table if exists user_account;").executeUpdate();
-
-            connection.prepareStatement("""
-                    CREATE TABLE IF NOT EXISTS user_account(
-                        id BIGSERIAL PRIMARY key,
-                        firstname VARCHAR(128),
-                        lastname VARCHAR(128) NOT NULL,
-                        birthday DATE NOT NULL,
-                        email VARCHAR(128) NOT NULL,
-                        registration DATE  NOT NULL,
-                        unique (lastname, email)
-                    );
-                    """).executeUpdate();
-
-            connection.prepareStatement("""
-                    CREATE TABLE IF NOT EXISTS exercise(
-                        id BIGSERIAL PRIMARY key,
-                        user_id BIGINT  NOT NULL REFERENCES user_account,
-                        exercise_name VARCHAR(128) NOT NULL ,
-                        calories INT NOT NULL,
-                        unique (user_id, exercise_name)
-                    );
-                    """).executeUpdate();
-
-            connection.prepareStatement("""
-                    CREATE TABLE IF NOT EXISTS diary_note(
-                        id BIGSERIAL PRIMARY key,
-                        user_id BIGINT  NOT NULL REFERENCES user_account,
-                        exercise_id BIGINT NOT NULL REFERENCES exercise,
-                        count INT NOT NULL,
-                        exercise_date_time TIMESTAMP,
-                        exercise_date DATE NOT NULL,
-                        unique (exercise_id, exercise_date)
-                    );
-                    """).executeUpdate();
-
-            connection.prepareStatement("""
-                    CREATE TABLE IF NOT EXISTS audit(
-                        id BIGSERIAL PRIMARY key,
-                        user_id BIGINT  NOT NULL REFERENCES user_account,
-                        action_date_time TIMESTAMP NOT NULL,
-                        action_date DATE NOT NULL,
-                        action_name VARCHAR(128) NOT NULL
-                    );
-                    """).executeUpdate();
-        } catch (SQLException e) {
             e.printStackTrace();
         }
     }

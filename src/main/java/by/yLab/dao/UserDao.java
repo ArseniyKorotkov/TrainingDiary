@@ -36,6 +36,8 @@ public class UserDao {
 
     private static final UserDao INSTANCE = new UserDao();
 
+    private JdbcConnector connector = new JdbcConnector();
+
     private UserDao() {
     }
 
@@ -55,16 +57,21 @@ public class UserDao {
      * @param user сведения, аккаунт пользователя
      */
     public void addUser(User user) {
-        try (Connection connection = JdbcConnector.getConnection()) {
-            PreparedStatement addUserStatement = connection.prepareStatement(ADD_USER_SQL);
+        try {
+            if (connector.getConnection().isPresent()) {
+                Connection connection = connector.getConnection().get();
+                PreparedStatement addUserStatement = connection.prepareStatement(ADD_USER_SQL);
 
-            addUserStatement.setString(1, user.getFirstname());
-            addUserStatement.setString(2, user.getLastname());
-            addUserStatement.setDate(3, Date.valueOf(user.getBirthday()));
-            addUserStatement.setString(4, user.getEmail());
-            addUserStatement.setDate(5, Date.valueOf(user.getRegistrationDate()));
+                addUserStatement.setString(1, user.getFirstname());
+                addUserStatement.setString(2, user.getLastname());
+                addUserStatement.setDate(3, Date.valueOf(user.getBirthday()));
+                addUserStatement.setString(4, user.getEmail());
+                addUserStatement.setDate(5, Date.valueOf(user.getRegistrationDate()));
 
-            addUserStatement.executeUpdate();
+                addUserStatement.executeUpdate();
+            } else {
+                throw new SQLException();
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -72,11 +79,16 @@ public class UserDao {
 
     public HashSet<User> getUsers() {
         HashSet<User> users = new HashSet<>();
-        try (Connection connection = JdbcConnector.getConnection()) {
-            PreparedStatement getUsersStatement = connection.prepareStatement(GET_USERS_SQL);
-            ResultSet resultSet = getUsersStatement.executeQuery();
-            while (resultSet.next()) {
-                users.add(buildUser(resultSet));
+        try {
+            if (connector.getConnection().isPresent()) {
+                Connection connection = connector.getConnection().get();
+                PreparedStatement getUsersStatement = connection.prepareStatement(GET_USERS_SQL);
+                ResultSet resultSet = getUsersStatement.executeQuery();
+                while (resultSet.next()) {
+                    users.add(buildUser(resultSet));
+                }
+            } else {
+                throw new SQLException();
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -92,15 +104,19 @@ public class UserDao {
      * @return аккаунт пользователя из точки хранения аккаунтов
      */
     public Optional<User> findUser(String lastName, String email) {
-
         Optional<User> userOptional = Optional.empty();
-        try(Connection connection = JdbcConnector.getConnection()) {
-            PreparedStatement findUserStatement = connection.prepareStatement(FIND_USER_BY_LASTNAME_EMAIL_SQL);
-            findUserStatement.setString(1, lastName);
-            findUserStatement.setString(2, email);
-            ResultSet resultSet = findUserStatement.executeQuery();
-            while (resultSet.next()) {
-                userOptional = Optional.of(buildUser(resultSet));
+        try {
+            if (connector.getConnection().isPresent()) {
+                Connection connection = connector.getConnection().get();
+                PreparedStatement findUserStatement = connection.prepareStatement(FIND_USER_BY_LASTNAME_EMAIL_SQL);
+                findUserStatement.setString(1, lastName);
+                findUserStatement.setString(2, email);
+                ResultSet resultSet = findUserStatement.executeQuery();
+                while (resultSet.next()) {
+                    userOptional = Optional.of(buildUser(resultSet));
+                }
+            } else {
+                throw new SQLException();
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -114,11 +130,16 @@ public class UserDao {
      * @param user удаляемый аккаунт
      */
     public void deleteUser(User user) {
-        try(Connection connection = JdbcConnector.getConnection()) {
-            PreparedStatement deleteUserStatement = connection.prepareStatement(DELETE_USER_SQL);
-            deleteUserStatement.setString(1, user.getLastname());
-            deleteUserStatement.setString(2, user.getEmail());
-            deleteUserStatement.executeUpdate();
+        try {
+            if (connector.getConnection().isPresent()) {
+                Connection connection = connector.getConnection().get();
+                PreparedStatement deleteUserStatement = connection.prepareStatement(DELETE_USER_SQL);
+                deleteUserStatement.setString(1, user.getLastname());
+                deleteUserStatement.setString(2, user.getEmail());
+                deleteUserStatement.executeUpdate();
+            } else {
+                throw new SQLException();
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
