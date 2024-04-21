@@ -3,16 +3,30 @@ package by.yLab.dao;
 import by.yLab.util.Action;
 import by.yLab.entity.Audit;
 import by.yLab.entity.User;
+import by.yLab.util.JdbcConnector;
 
+import java.sql.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class AuditDao {
 
     private static final AuditDao INSTANCE = new AuditDao();
 
-    private final List<Audit> auditList = new ArrayList<>();
+    private static final String ADD_ACTION = """
+            INSERT INTO audit(user_id, action_date_time, action_date, action_name)
+            VALUES(?,?,?,?)
+            """;
+    private static final String GET_ACTIONS_FROM_USER = """
+            SELECT *
+            FROM audit
+            WHERE user_id=?
+            """;
+
+    private JdbcConnector connector = new JdbcConnector();
 
     private AuditDao() {
     }
@@ -24,7 +38,21 @@ public class AuditDao {
      * @param action действие пользователя
      */
     public void addAction(User user, Action action) {
-        auditList.add(new Audit(user, action, LocalDateTime.now()));
+        try {
+            if (connector.getConnection().isPresent()) {
+                Connection connection = connector.getConnection().get();
+                PreparedStatement preparedStatement = connection.prepareStatement(ADD_ACTION);
+                preparedStatement.setLong(1, user.getId());
+                preparedStatement.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
+                preparedStatement.setDate(3, Date.valueOf(LocalDate.now()));
+                preparedStatement.setString(4, action.name());
+                preparedStatement.executeUpdate();
+            } else {
+                throw new SQLException();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -34,9 +62,25 @@ public class AuditDao {
      * @return список действий пользователя
      */
     public List<Audit> getAuditUser(User user) {
-        return auditList.stream()
-                .filter(audit -> audit.getUser().equals(user))
-                .toList();
+        List<Audit> auditList = new ArrayList<>();
+        try {
+            if (connector.getConnection().isPresent()) {
+                Connection connection = connector.getConnection().get();
+                PreparedStatement preparedStatement = connection.prepareStatement(GET_ACTIONS_FROM_USER);
+                preparedStatement.setLong(1, user.getId());
+                ResultSet resultSet = preparedStatement.executeQuery();
+                while (resultSet.next()) {
+                    auditList.add(new Audit(resultSet.getLong(2),
+                            Action.valueOf(resultSet.getString(5)),
+                            resultSet.getTimestamp(3).toLocalDateTime()));
+                }
+            } else {
+                throw new SQLException();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return auditList;
     }
 
     public static AuditDao getInstance() {

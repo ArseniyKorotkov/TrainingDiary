@@ -18,15 +18,24 @@ public class User {
     private static final String USER_TO_STRING_FORMAT = "User %s %s, \nbirthday %s, email \"%s\", \nregistration date %s";
 
     private Long id;
-    private String firstName;
-    private String lastName;
+    private String firstname;
+    private String lastname;
     private LocalDate birthday;
     private String email;
     private LocalDate registrationDate;
 
     public User(String firstName, String lastName, LocalDate birthday, String email, LocalDate registrationDay) {
-        this.firstName = firstName;
-        this.lastName = lastName;
+        this.firstname = firstName;
+        this.lastname = lastName;
+        this.birthday = birthday;
+        this.email = email;
+        this.registrationDate = registrationDay;
+    }
+
+    public User(long id, String firstName, String lastName, LocalDate birthday, String email, LocalDate registrationDay) {
+        this.id = id;
+        this.firstname = firstName;
+        this.lastname = lastName;
         this.birthday = birthday;
         this.email = email;
         this.registrationDate = registrationDay;
@@ -34,7 +43,7 @@ public class User {
 
     @Override
     public String toString() {
-        return USER_TO_STRING_FORMAT.formatted(firstName, lastName, birthday.format(FormatDateTime.reformDate()),
+        return USER_TO_STRING_FORMAT.formatted(firstname, lastname, birthday.format(FormatDateTime.reformDate()),
                 email, registrationDate.format(FormatDateTime.reformDate()));
 
 

@@ -2,9 +2,9 @@ package by.yLab.controller;
 
 import by.yLab.util.FormatDateTime;
 import by.yLab.entity.Exercise;
-import by.yLab.entity.NoteDiary;
+import by.yLab.entity.DiaryNote;
 import by.yLab.entity.User;
-import by.yLab.service.NoteDiaryService;
+import by.yLab.service.DiaryNoteService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -46,7 +46,7 @@ public class DiaryControllerTest {
     @InjectMocks
     private DiaryController diaryController;
     @Mock
-    private NoteDiaryService diaryService;
+    private DiaryNoteService diaryService;
 
     @Test
     void addExercise() {
@@ -68,9 +68,9 @@ public class DiaryControllerTest {
 
     @Test
     void getDiaryTimeSlice() {
-        ArrayList<NoteDiary> noteDiaries = new ArrayList<>();
+        ArrayList<DiaryNote> noteDiaries = new ArrayList<>();
         doReturn(noteDiaries).when(diaryService).getDiaryList(user);
-        List<NoteDiary> diaryTimeSlice = diaryController.getDiaryTimeSlice(START_TIME_SLICE + "/" + END_TIME_SLICE, user);
+        List<DiaryNote> diaryTimeSlice = diaryController.getDiaryTimeSlice(START_TIME_SLICE + "/" + END_TIME_SLICE, user);
         verify(diaryService, times(1)).getDiaryList(user);
         verify(diaryService, times(0)).getDateNoteExercises(user, LocalDate.now());
         assertEquals(noteDiaries, diaryTimeSlice, "возвращен не правильный список записей");

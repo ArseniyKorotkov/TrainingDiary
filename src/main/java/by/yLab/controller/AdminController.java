@@ -5,7 +5,7 @@ import by.yLab.util.Action;
 import by.yLab.entity.Audit;
 import by.yLab.entity.User;
 import by.yLab.service.AuditService;
-import by.yLab.service.NoteDiaryService;
+import by.yLab.service.DiaryNoteService;
 import by.yLab.service.ExerciseService;
 import by.yLab.service.UserService;
 
@@ -20,7 +20,7 @@ public class AdminController {
     private static final AdminController INSTANCE = new AdminController();
 
     private UserService userService = UserService.getInstance();
-    private NoteDiaryService diaryService = NoteDiaryService.getInstance();
+    private DiaryNoteService diaryService = DiaryNoteService.getInstance();
     private ExerciseService exerciseService = ExerciseService.getInstance();
     private AuditService auditService = AuditService.getInstance();
     public static final String ADMIN_PASSWORD = "iAmAdmin";

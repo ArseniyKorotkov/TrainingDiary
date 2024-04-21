@@ -1,0 +1,21 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd"
+        logicalFilePath="changelog.xml">
+
+    <changeSet id="drop-all" author="arsy">
+        <dropTable tableName="audit"/>
+        <dropTable tableName="diary_note"/>
+        <dropTable tableName="exercise"/>
+        <dropTable tableName="user_account"/>
+        <dropAllForeignKeyConstraints baseTableName="audit"/>
+        <dropAllForeignKeyConstraints baseTableName="diary_note"/>
+        <dropAllForeignKeyConstraints baseTableName="exercise"/>
+        <dropAllForeignKeyConstraints baseTableName="user_account"/>
+    </changeSet>
+
+
+
+</databaseChangeLog>

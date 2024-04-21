@@ -14,7 +14,11 @@
         <org.junit.jupiter-version>5.10.0</org.junit.jupiter-version>
         <junit-version>4.13.1</junit-version>
         <org.projectlombok-version>1.18.32</org.projectlombok-version>
-        <org.mockito>5.11.0</org.mockito>
+        <org.mockito-version>5.11.0</org.mockito-version>
+        <org.postgresql-version>42.7.2</org.postgresql-version>
+        <org.liquibase-version>4.27.0</org.liquibase-version>
+        <org.testcontainers-version>1.19.7</org.testcontainers-version>
+        <org.slf4j-version>2.0.13</org.slf4j-version>
     </properties>
 
     <dependencies>
@@ -45,9 +49,60 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
-            <version>${org.mockito}</version>
+            <version>${org.mockito-version}</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${org.postgresql-version}</version>
+        </dependency>
+
+
+
+        <!-- https://mvnrepository.com/artifact/org.liquibase/liquibase-core -->
+        <dependency>
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-core</artifactId>
+            <version>${org.liquibase-version}</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.testcontainers/junit-jupiter -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${org.testcontainers-version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.testcontainers/postgresql -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${org.testcontainers-version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${org.slf4j-version}</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-reload4j -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-reload4j</artifactId>
+            <version>${org.slf4j-version}</version>
+            <scope>test</scope>
+        </dependency>
+
+
+
+
 
     </dependencies>
 

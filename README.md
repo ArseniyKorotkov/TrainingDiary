@@ -1,6 +1,7 @@
 # TrainingDiary
 
-###Запуск из класса TrainingDiary.
+###Запуск postgresql из файла docker-compose.yml в корне проекта
+###Запуск приложения из класса TrainingDiary.
 
 При запуске приложения появляется приветственное сообщение
 ```

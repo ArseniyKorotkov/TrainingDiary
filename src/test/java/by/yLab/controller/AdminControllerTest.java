@@ -5,7 +5,7 @@ import by.yLab.util.FormatDateTime;
 import by.yLab.entity.Audit;
 import by.yLab.entity.User;
 import by.yLab.service.AuditService;
-import by.yLab.service.NoteDiaryService;
+import by.yLab.service.DiaryNoteService;
 import by.yLab.service.ExerciseService;
 import by.yLab.service.UserService;
 import org.junit.jupiter.api.Test;
@@ -38,7 +38,7 @@ public class AdminControllerTest {
     @Mock
     private UserService userService;
     @Mock
-    private NoteDiaryService diaryService;
+    private DiaryNoteService diaryService;
     @Mock
     private ExerciseService exerciseService;
     @Mock

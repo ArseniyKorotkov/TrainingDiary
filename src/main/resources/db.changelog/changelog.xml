@@ -1,0 +1,13 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd"
+        logicalFilePath="db/changelog/changelog.xml">
+<!--    <include file="drop/drop_all_tables.xml" relativeToChangelogFile="true"/>-->
+    <include file="create/create-user-account-table.xml" relativeToChangelogFile="true"/>
+    <include file="create/create-exercise-table.xml" relativeToChangelogFile="true"/>
+    <include file="create/create-diary-note-table.xml" relativeToChangelogFile="true"/>
+    <include file="create/create-audit-table.xml" relativeToChangelogFile="true"/>
+
+</databaseChangeLog>

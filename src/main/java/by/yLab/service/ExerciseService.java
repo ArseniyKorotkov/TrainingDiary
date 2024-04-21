@@ -3,7 +3,12 @@ package by.yLab.service;
 import by.yLab.entity.Exercise;
 import by.yLab.entity.User;
 import by.yLab.dao.ExerciseDao;
+import by.yLab.util.JdbcConnector;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Optional;
 import java.util.Set;
 
@@ -39,6 +44,17 @@ public class ExerciseService {
      */
     public Optional<Exercise> getExerciseToName(User user, String exerciseName) {
         return exerciseDao.getExerciseToName(user, exerciseName);
+    }
+
+    /**
+     * Поиск типа тренировки в точке сохранения по его названию
+     *
+     * @param userId     id аккаунт-владельца типа тренировки
+     * @param exerciseId id названия типа тренировки
+     * @return тип тренировки
+     */
+    public Optional<Exercise> getExerciseToId(long userId, long exerciseId) {
+        return exerciseDao.getExerciseToId(userId, exerciseId);
     }
 
     /**

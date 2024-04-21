@@ -1,0 +1,51 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd"
+        logicalFilePath="changelog.xml">
+    <changeSet id="diary-note-table" author="arsy">
+
+        <createTable tableName="diary_note" ifNotExists="true">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="exercise_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="count" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="exercise_date_time" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="exercise_date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="diary_note"
+                                 baseColumnNames="user_id"
+                                 constraintName="fk_id_user_account_diary"
+                                 referencedTableName="user_account"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"
+                                 onUpdate="CASCADE"/>
+
+        <addForeignKeyConstraint baseTableName="diary_note"
+                                 baseColumnNames="exercise_id"
+                                 constraintName="fk_id_exercise_diary"
+                                 referencedTableName="exercise"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"
+                                 onUpdate="CASCADE"/>
+
+        <addUniqueConstraint tableName="diary_note" columnNames="exercise_id, exercise_date"/>
+
+    </changeSet>
+
+
+</databaseChangeLog>
