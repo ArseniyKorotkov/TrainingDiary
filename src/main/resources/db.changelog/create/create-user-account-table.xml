@@ -11,20 +11,25 @@
             <column name="id" type="BIGSERIAL">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="firstName" type="VARCHAR(255)">
+            <column name="firstname" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
-            <column name="lastName" type="VARCHAR(255)">
+            <column name="lastname" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="birthday" type="DATE">
                 <constraints nullable="false"/>
             </column>
             <column name="email" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
-            <column name="registration_date" type="DATE">
+            <column name="registration" type="DATE">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <addUniqueConstraint tableName="user_account" columnNames="lastname, email"/>
+        <addUniqueConstraint constraintName="user_account_last_email"
+                             tableName="user_account"
+                             columnNames="lastname, email"/>
     </changeSet>
 
 </databaseChangeLog>

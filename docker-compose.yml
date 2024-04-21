@@ -1,0 +1,19 @@
+version: latest
+services:
+
+#  training_diary_app:
+#    image: openjdk:latest
+#    container_name: my_java
+#    restart: always
+
+  postgres_db:
+    image: postgres:latest
+    container_name: my_postgres
+    environment:
+      - POSTGRES_PASSWORD=ArsySQL
+    ports:
+      - 5433:5432
+    restart: always
+
+
+

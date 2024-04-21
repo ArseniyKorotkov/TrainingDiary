@@ -3,6 +3,14 @@ package by.yLab.dao;
 import by.yLab.util.FormatDateTime;
 import by.yLab.entity.User;
 import by.yLab.util.JdbcConnector;
+import liquibase.Liquibase;
+import liquibase.database.Database;
+import liquibase.database.DatabaseFactory;
+import liquibase.database.jvm.JdbcConnection;
+import liquibase.exception.LiquibaseException;
+import liquibase.resource.ClassLoaderResourceAccessor;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,18 +20,26 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Testcontainers
 @ExtendWith(MockitoExtension.class)
+@Testcontainers()
 public class UserDaoTest {
 
     @Container
-    private final PostgreSQLContainer<?> container = new PostgreSQLContainer<>("postgres:latest");
+    private static PostgreSQLContainer<?> container = new PostgreSQLContainer<>("postgres")
+            .withExposedPorts(5433, 5432)
+            .withUsername("test")
+            .withPassword("test");
+
+
     private static final String TEST_USER_FIRSTNAME = "first";
     private static final String TEST_USER_LASTNAME = "last";
     private static final String TEST_USER_BIRTHDAY = "11.11.2020";
@@ -48,7 +64,19 @@ public class UserDaoTest {
     @InjectMocks
     private UserDao userDao;
 
-    @Test
+
+    @BeforeAll
+    static void init() {
+//        try {
+//            JdbcConnector.initDatabaseLiquibase(JdbcConnector.getConnection());
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+    }
+
+
+
+    @Test()
     void isUserRegistered() {
         userDao.addUser(user);
         assertTrue(userDao.isUserRegistered(user),

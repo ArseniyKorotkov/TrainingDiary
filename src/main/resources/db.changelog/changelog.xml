@@ -10,5 +10,4 @@
     <include file="create/create-diary-note-table.xml" relativeToChangelogFile="true"/>
     <include file="create/create-audit-table.xml" relativeToChangelogFile="true"/>
 
-
 </databaseChangeLog>

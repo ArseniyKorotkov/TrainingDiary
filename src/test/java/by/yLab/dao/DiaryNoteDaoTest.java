@@ -10,6 +10,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.images.ImagePullPolicy;
+import org.testcontainers.images.PullPolicy;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -24,7 +26,10 @@ import static org.junit.jupiter.api.Assertions.*;
 public class DiaryNoteDaoTest {
 
     @Container
-    private final PostgreSQLContainer<?> container = new PostgreSQLContainer<>("postgres:latest");
+    private final PostgreSQLContainer<?> container = new PostgreSQLContainer<>("postgres")
+            .withUsername("postgres")
+            .withPassword("ArsySQL");
+
     private static final String TEST_USER_FIRSTNAME = "first";
     private static final String TEST_USER_LASTNAME = "last";
     private static final String TEST_USER_BIRTHDAY = "11.11.2020";
@@ -49,8 +54,7 @@ public class DiaryNoteDaoTest {
     private final Exercise firstExercise = new Exercise(1,TEST_FIRST_EXERCISE_NAME, TEST_FIRST_EXERCISE_BURN_CALORIES);
     private final Exercise secondExercise = new Exercise(2, TEST_SECOND_EXERCISE_NAME, TEST_SECOND_EXERCISE_BURN_CALORIES);
 
-    @InjectMocks
-    private DiaryNoteDao noteDiaryDao;
+    private DiaryNoteDao noteDiaryDao =  DiaryNoteDao.getInstance();
     private UserDao userDao = UserDao.getInstance();
     private ExerciseDao exerciseDao = ExerciseDao.getInstance();
 

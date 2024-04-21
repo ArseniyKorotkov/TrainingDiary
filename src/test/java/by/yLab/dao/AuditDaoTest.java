@@ -4,6 +4,7 @@ import by.yLab.util.Action;
 import by.yLab.util.FormatDateTime;
 import by.yLab.entity.Audit;
 import by.yLab.entity.User;
+import by.yLab.util.JdbcConnector;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,6 +14,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
@@ -23,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class AuditDaoTest {
 
     @Container
-    private final PostgreSQLContainer<?> container = new PostgreSQLContainer<>("postgres:latest");
+    private PostgreSQLContainer<?> container = new PostgreSQLContainer<>("postgres:latest");
 
     private static final long TEST_USER_ID = 1;
     private static final String TEST_USER_FIRSTNAME = "first";
@@ -41,10 +43,8 @@ public class AuditDaoTest {
             TEST_USER_EMAIL,
             LocalDate.now().minusDays(5));
 
-    @InjectMocks
-    private AuditDao auditDao;
-    @InjectMocks
-    private static UserDao userDao;
+    private final static AuditDao auditDao  = AuditDao.getInstance();
+    private final static UserDao userDao = UserDao.getInstance();
 
 
     @BeforeAll
@@ -53,9 +53,10 @@ public class AuditDaoTest {
     }
     @Test
     void addAction() {
+        int startSize = auditDao.getAuditUser(USER).size();
         auditDao.addAction(USER, FIRST_ACTION);
         auditDao.addAction(USER, SECOND_ACTION);
-        assertEquals(2, auditDao.getAuditUser(USER).size(), "действия пользователя не добавлены");
+        assertEquals(startSize + 2, auditDao.getAuditUser(USER).size(), "действия пользователя не добавлены");
     }
 
     @Test

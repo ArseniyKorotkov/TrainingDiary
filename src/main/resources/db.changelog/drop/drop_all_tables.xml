@@ -10,6 +10,10 @@
         <dropTable tableName="diary_note"/>
         <dropTable tableName="exercise"/>
         <dropTable tableName="user_account"/>
+        <dropAllForeignKeyConstraints baseTableName="audit"/>
+        <dropAllForeignKeyConstraints baseTableName="diary_note"/>
+        <dropAllForeignKeyConstraints baseTableName="exercise"/>
+        <dropAllForeignKeyConstraints baseTableName="user_account"/>
     </changeSet>
 
 
