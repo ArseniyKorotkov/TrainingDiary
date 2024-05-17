@@ -7,10 +7,13 @@ import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.LiquibaseException;
 import liquibase.resource.ClassLoaderResourceAccessor;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Optional;
+import java.util.Properties;
 
 /**
  * Управление соединениями с базой данных
@@ -24,13 +27,14 @@ public class JdbcConnector {
     private static final String CHANGE_DEFAULT_SCHEMA_SQL = """
             SET search_path TO diary_repository,public;
             """;
-    private static final String CHANGELOG_PATH = "db.changelog/changelog.xml";
+    private static final String CHANGELOG_PATH = getPropertyValue("cl.changelog_path");
 
     private static Connection connection;
 
-    private static final String URL = "jdbc:postgresql://localhost:5433/postgres";
-    private static final String USER_NAME = "postgres";
-    private static final String PASSWORD = "ArsySQL";
+    private static Properties PROPERTIES;
+    private static final String URL = getPropertyValue("db.url");
+    private static final String USER_NAME = getPropertyValue("db.user");
+    private static final String PASSWORD = getPropertyValue("db.password");
 
     public JdbcConnector() {
     }
@@ -42,13 +46,21 @@ public class JdbcConnector {
      */
     public Optional<Connection> getConnection() {
         Optional<Connection> connectionOptional = Optional.ofNullable(connection);
-        if(connectionOptional.isEmpty()) {
-            try {
-                connection = DriverManager.getConnection(URL, USER_NAME, PASSWORD);
-                connection.prepareStatement(CHANGE_DEFAULT_SCHEMA_SQL).executeUpdate();
-                connectionOptional = Optional.of(connection);
-            } catch (SQLException e) {
-                e.printStackTrace();
+        if (connectionOptional.isEmpty()) {
+            while (true) {
+                try {
+                    connection = DriverManager.getConnection(URL, USER_NAME, PASSWORD);
+                    connection.prepareStatement(CHANGE_DEFAULT_SCHEMA_SQL).executeUpdate();
+                    connectionOptional = Optional.of(connection);
+                    break;
+                } catch (SQLException e) {
+                    try {
+                        Thread.sleep(20L);
+                    } catch (InterruptedException ex) {
+                        ex.printStackTrace();
+                    }
+                    e.printStackTrace();
+                }
             }
         }
         return connectionOptional;
@@ -56,10 +68,11 @@ public class JdbcConnector {
 
     /**
      * Инициализация базы данных
+     *
      * @param connection соединение с базой данных
      * @throws SQLException неудача создания схемы базы данных
      */
-    public static void initDatabaseLiquibase (Connection connection) throws SQLException {
+    public static void initDatabaseLiquibase(Connection connection) throws SQLException {
         connection.prepareStatement(CREATE_DIARY_SCHEMA_SQL).executeUpdate();
         Database correctDatabaseImplementation;
         try {
@@ -73,5 +86,19 @@ public class JdbcConnector {
         } catch (LiquibaseException e) {
             e.printStackTrace();
         }
+    }
+
+    public static String getPropertyValue(String property) {
+        if(PROPERTIES == null) {
+            PROPERTIES = new Properties();
+        }
+        try( InputStream resourceAsStream = JdbcConnector.class
+                .getClassLoader()
+                .getResourceAsStream("application.properties")) {
+            PROPERTIES.load(resourceAsStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return PROPERTIES.getProperty(property);
     }
 }

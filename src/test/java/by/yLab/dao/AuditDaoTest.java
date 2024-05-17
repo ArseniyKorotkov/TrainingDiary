@@ -5,10 +5,7 @@ import by.yLab.util.FormatDateTime;
 import by.yLab.entity.Audit;
 import by.yLab.entity.User;
 import by.yLab.util.JdbcConnector;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -26,6 +23,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Optional;
 
+import static by.yLab.util.JdbcConnector.getPropertyValue;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Testcontainers
@@ -33,11 +31,12 @@ import static org.junit.jupiter.api.Assertions.*;
 public class AuditDaoTest {
 
     @Container
-    private static PostgreSQLContainer<?> container = new PostgreSQLContainer<>("postgres")
-            .withExposedPorts(5433, 5432)
-            .withUsername("postgres")
-            .withPassword("ArsySQL")
-            .withDatabaseName("postgres");
+    private static final PostgreSQLContainer<?> container =
+            new PostgreSQLContainer<>(getPropertyValue("docker.image_name.test"))
+            .withExposedPorts(5435, 5432)
+            .withUsername(getPropertyValue("db.user.test"))
+            .withPassword(getPropertyValue("db.password.test"))
+            .withDatabaseName(getPropertyValue("docker.db_name.test"));
 
     private static final String ADD_USER_SQL = """
             INSERT INTO user_account(firstname, lastname, birthday, email, registration)
@@ -94,17 +93,16 @@ public class AuditDaoTest {
         auditDao.addAction(USER, SECOND_ACTION);
         assertEquals(startSize + 2, auditDao.getAuditUser(USER).size(),
                 "действия пользователя не добавлены");
-        try {
-            connection.rollback();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
     @Test
     void getAuditUser() {
         assertEquals(new ArrayList<Audit>(), auditDao.getAuditUser(USER),
                 "не создан список действий пользователя");
+    }
+
+    @AfterEach
+    void rollback() {
         try {
             connection.rollback();
         } catch (SQLException e) {
@@ -113,9 +111,10 @@ public class AuditDaoTest {
     }
 
     @AfterAll
-    static void cleanDatabase() {
+    static void clean() {
         try {
             deleteUserFromDatabase();
+            connection.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }

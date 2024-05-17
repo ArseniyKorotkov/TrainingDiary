@@ -1,19 +1,26 @@
 version: latest
+
+name: traynie
 services:
+  diary_app:
+    container_name: diary
+    build: .
+    stdin_open: true
+    tty: true
+    depends_on:
+      - post
+    networks:
+      - back
 
-  training_diary_app:
-    image: openjdk:latest
-    container_name: my_java
-    restart: always
-
-  postgres_db:
+  post:
+    container_name: post
     image: postgres:latest
-    container_name: my_postgres
     environment:
       - POSTGRES_PASSWORD=ArsySQL
-    ports:
-      - 5433:5432
-    restart: always
+    networks:
+      - back
 
-
-
+networks:
+  back:
+    name: back
+    driver: bridge

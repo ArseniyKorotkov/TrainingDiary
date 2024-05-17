@@ -6,10 +6,4 @@ COPY . .
 
 RUN mvn clean package -DskipTests
 
-FROM openjdk:latest
-
-WORKDIR /app
-
-COPY . .
-
-CMD ["java","-jar","TrainingDiary.jar"]
+ENTRYPOINT ["java","-jar","target/TrainingDiary-1.0-SNAPSHOT-shaded.jar"]

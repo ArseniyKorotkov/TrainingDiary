@@ -1,5 +1,4 @@
 package by.yLab.dto;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,5 +23,9 @@ public class UserDto {
     public UserDto(String lastName, String email) {
         this.lastName = lastName;
         this.email = email;
+    }
+
+    public void annotDo() {
+
     }
 }

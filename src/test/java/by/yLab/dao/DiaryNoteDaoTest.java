@@ -5,10 +5,7 @@ import by.yLab.entity.Exercise;
 import by.yLab.entity.DiaryNote;
 import by.yLab.entity.User;
 import by.yLab.util.JdbcConnector;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -27,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static by.yLab.util.JdbcConnector.getPropertyValue;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Testcontainers
@@ -34,11 +32,12 @@ import static org.junit.jupiter.api.Assertions.*;
 public class DiaryNoteDaoTest {
 
     @Container
-    private static PostgreSQLContainer<?> container = new PostgreSQLContainer<>("postgres")
-            .withExposedPorts(5433, 5432)
-            .withUsername("postgres")
-            .withPassword("ArsySQL")
-            .withDatabaseName("postgres");
+    private static final PostgreSQLContainer<?> container =
+            new PostgreSQLContainer<>(getPropertyValue("docker.image_name.test"))
+            .withExposedPorts(5435, 5432)
+            .withUsername(getPropertyValue("db.user.test"))
+            .withPassword(getPropertyValue("db.password.test"))
+            .withDatabaseName(getPropertyValue("docker.db_name.test"));
 
     private static final String ADD_USER_SQL = """
             INSERT INTO user_account(firstname, lastname, birthday, email, registration)
@@ -116,11 +115,6 @@ public class DiaryNoteDaoTest {
         noteDiaryDao.addNodeExercise(USER, FIRST_EXERCISE, TEST_FIRST_EXERCISE_TIMES);
         assertEquals(allNoteExercises.size() + 1, noteDiaryDao.getAllNoteExercises(USER).size(),
                 "количество записей не увеличено при добавлении новой записи на текущие сутки");
-        try {
-            connection.rollback();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
     @Test
@@ -131,11 +125,6 @@ public class DiaryNoteDaoTest {
         noteDiaryDao.addNodeExercise(USER, SECOND_EXERCISE, TEST_SECOND_EXERCISE_TIMES, TEST_FIRST_EXERCISE_DATE_TIME);
         assertEquals(allNoteExercises.size() + 2, noteDiaryDao.getAllNoteExercises(USER).size(),
                 "количество записей не увеличено при добавлении новой записи на указанное время");
-        try {
-            connection.rollback();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
     @Test
@@ -146,11 +135,6 @@ public class DiaryNoteDaoTest {
         noteDiaryDao.deleteNoteExercise(USER, FIRST_EXERCISE, TEST_FIRST_EXERCISE_DATE_TIME.toLocalDate());
         assertEquals(allNoteExercises.size() - 1, noteDiaryDao.getAllNoteExercises(USER).size(),
                 "количество записей не уменьшено при удалении записи");
-        try {
-            connection.rollback();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
     @Test
@@ -159,11 +143,6 @@ public class DiaryNoteDaoTest {
         noteDiaryDao.addNodeExercise(USER, SECOND_EXERCISE, TEST_SECOND_EXERCISE_TIMES, TEST_SECOND_EXERCISE_DATE_TIME);
         assertEquals(2, noteDiaryDao.getAllNoteExercises(USER).size(),
                 "возвращены не все записи");
-        try {
-            connection.rollback();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
     @Test
@@ -174,11 +153,6 @@ public class DiaryNoteDaoTest {
                 "количество записей возвращено без учета даты");
         assertEquals(1, noteDiaryDao.getDateNoteExercises(USER, TEST_SECOND_EXERCISE_DATE_TIME.toLocalDate()).size(),
                 "количество записей возвращено без учета даты");
-        try {
-            connection.rollback();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
     @Test
@@ -187,11 +161,6 @@ public class DiaryNoteDaoTest {
         noteDiaryDao.addNodeExercise(USER, SECOND_EXERCISE, TEST_SECOND_EXERCISE_TIMES, TEST_SECOND_EXERCISE_DATE_TIME);
         assertEquals(1, noteDiaryDao.getToday(USER).size(),
                 "количество записей возвращено без учета даты сегодняшнего дня");
-        try {
-            connection.rollback();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
     @Test
@@ -201,11 +170,6 @@ public class DiaryNoteDaoTest {
         noteDiaryDao.deleteDiary(USER);
         assertEquals(0, noteDiaryDao.getAllNoteExercises(USER).size(),
                 "удалены не все записи пользователя");
-        try {
-            connection.rollback();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
     @Test
@@ -215,6 +179,10 @@ public class DiaryNoteDaoTest {
         noteDiaryDao.addNodeExercise(USER, FIRST_EXERCISE, TEST_FIRST_EXERCISE_TIMES, TEST_FIRST_EXERCISE_DATE_TIME);
         assertTrue(noteDiaryDao.isExerciseInDiary(USER, FIRST_EXERCISE, TEST_FIRST_EXERCISE_DATE_TIME),
                 "добавленный тип тренировки принят за не добавленный");
+    }
+
+    @AfterEach
+    void rollback() {
         try {
             connection.rollback();
         } catch (SQLException e) {
@@ -224,10 +192,11 @@ public class DiaryNoteDaoTest {
 
 
     @AfterAll
-    static void cleanDatabase() {
+    static void clean() {
         try {
             deleteUserFromDatabase();
             deleteExercisesFromDatabase();
+            connection.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }

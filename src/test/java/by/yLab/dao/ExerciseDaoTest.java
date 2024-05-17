@@ -25,6 +25,7 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Optional;
 
+import static by.yLab.util.JdbcConnector.getPropertyValue;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Testcontainers
@@ -32,11 +33,12 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ExerciseDaoTest {
 
     @Container
-    private static PostgreSQLContainer<?> container = new PostgreSQLContainer<>("postgres")
-            .withExposedPorts(5433, 5432)
-            .withUsername("postgres")
-            .withPassword("ArsySQL")
-            .withDatabaseName("postgres");
+    private static final PostgreSQLContainer<?> container =
+            new PostgreSQLContainer<>(getPropertyValue("docker.image_name.test"))
+            .withExposedPorts(5435, 5432)
+            .withUsername(getPropertyValue("db.user.test"))
+            .withPassword(getPropertyValue("db.password.test"))
+            .withDatabaseName(getPropertyValue("docker.db_name.test"));
 
     private static final String ADD_USER_SQL = """
             INSERT INTO user_account(firstname, lastname, birthday, email, registration)
@@ -98,11 +100,6 @@ public class ExerciseDaoTest {
 
         exerciseDao.createExercise(USER, TEST_SECOND_EXERCISE_NAME, TEST_SECOND_EXERCISE_BURN_CALORIES);
         assertEquals(2, exerciseDao.getUserExercises(USER).size(), "тип тренировки не создан");
-        try {
-            connection.rollback();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
     @Test
@@ -111,11 +108,6 @@ public class ExerciseDaoTest {
         Optional<Exercise> exerciseToName = exerciseDao.getExerciseToName(USER, TEST_FIRST_EXERCISE_NAME);
         assertTrue(exerciseToName.isPresent(), "тип тренировки не найден по имени");
         assertEquals(firstExercise, exerciseToName.get());
-        try {
-            connection.rollback();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
     @Test
@@ -125,22 +117,12 @@ public class ExerciseDaoTest {
                 "созданная ранее тренировка принята за новую");
         assertTrue(exerciseDao.isExerciseNew(USER, secondExercise),
                 "новая тренировка принята за созданную ранее");
-        try {
-            connection.rollback();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
     @Test
     void getUserExercises() {
         assertEquals(new HashSet<Exercise>(), exerciseDao.getUserExercises(USER),
                 "не создан список типов тренировок пользователя");
-        try {
-            connection.rollback();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
     @Test
@@ -150,6 +132,10 @@ public class ExerciseDaoTest {
         exerciseDao.deleteExercises(USER);
         assertEquals(0, exerciseDao.getUserExercises(USER).size(),
                 "удалены не все типы тренировок пользователя");
+    }
+
+    @BeforeEach
+    void rollback() {
         try {
             connection.rollback();
         } catch (SQLException e) {
@@ -158,9 +144,10 @@ public class ExerciseDaoTest {
     }
 
     @AfterAll
-    static void cleanDatabase() {
+    static void clean() {
         try {
             deleteUserFromDatabase();
+            connection.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }

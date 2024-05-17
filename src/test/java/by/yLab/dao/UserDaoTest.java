@@ -3,9 +3,7 @@ package by.yLab.dao;
 import by.yLab.util.FormatDateTime;
 import by.yLab.entity.User;
 import by.yLab.util.JdbcConnector;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -14,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -21,17 +20,19 @@ import java.util.HashSet;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static by.yLab.util.JdbcConnector.getPropertyValue;
 
 @ExtendWith(MockitoExtension.class)
 @Testcontainers()
 public class UserDaoTest {
 
     @Container
-    private static PostgreSQLContainer<?> container = new PostgreSQLContainer<>("postgres")
-            .withExposedPorts(5433, 5432)
-            .withUsername("postgres")
-            .withPassword("ArsySQL")
-            .withDatabaseName("postgres");
+    private static final PostgreSQLContainer<?> container =
+            new PostgreSQLContainer<>(getPropertyValue("docker.image_name.test"))
+            .withExposedPorts(5435, 5432)
+            .withUsername(getPropertyValue("db.user.test"))
+            .withPassword(getPropertyValue("db.password.test"))
+            .withDatabaseName(getPropertyValue("docker.db_name.test"));
 
 
     private static final String TEST_USER_FIRSTNAME = "first";
@@ -67,7 +68,6 @@ public class UserDaoTest {
             connection = container.createConnection("");
             JdbcConnector.initDatabaseLiquibase(connection);
             connection.setAutoCommit(false);
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -79,19 +79,13 @@ public class UserDaoTest {
     }
 
 
-
     @Test()
     void isUserRegistered() {
         userDao.addUser(user);
         assertTrue(userDao.isUserRegistered(user),
-                "зарегистрированный пользователь принят за не зарегистрированного");
+                " зарегистрированный пользователь принят за не зарегистрированного");
         assertFalse(userDao.isUserRegistered(secondUser),
                 " не зарегистрированный пользователь принят за зарегистрированного");
-        try {
-            connection.rollback();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
     @Test
@@ -101,21 +95,11 @@ public class UserDaoTest {
         assertEquals(1, userDao.getUsers().size(), "первый пользователь не добавлен в список");
         userDao.addUser(secondUser);
         assertEquals(2, userDao.getUsers().size(), "второй пользователь не добавлен в список");
-        try {
-            connection.rollback();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
     @Test
     void getUsers() {
         assertEquals(new HashSet<User>(), userDao.getUsers(), "список пользователей не возвращен");
-        try {
-            connection.rollback();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
     @Test
@@ -126,11 +110,6 @@ public class UserDaoTest {
         user.setId(userOptional.get().getId());
         assertEquals(user, userOptional.get(), "найден неверный пользователь по фамилии и почте");
         assertFalse(userDao.findUser(TEST_SECOND_USER_LASTNAME, TEST_USER_EMAIL).isPresent());
-        try {
-            connection.rollback();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
     @Test
@@ -142,8 +121,21 @@ public class UserDaoTest {
         assertEquals(testSize - 1, userDao.getUsers().size(), "первый пользователь не удален из списка");
         userDao.deleteUser(secondUser);
         assertEquals(testSize - 2, userDao.getUsers().size(), "второй пользователь не удален из списка");
+    }
+
+    @AfterEach
+    void rollback() {
         try {
             connection.rollback();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @AfterAll
+    static void clean() {
+        try {
+            connection.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
